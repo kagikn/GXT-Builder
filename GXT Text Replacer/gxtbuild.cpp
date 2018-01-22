@@ -686,7 +686,7 @@ static const char* const helpText = "Usage:\tgxtbuilder.exe path\\to\\ini.ini [-
 int wmain(int argc, wchar_t* argv[])
 {
     std::ios_base::sync_with_stdio(false);
-    std::wcout << L"GXT Builder v1.2\nMade by Silent\n";
+    std::wcout << L"GXT Text Replacer v1.0\nMade by kagikn, Special thanks to Silent\n";
 
     const std::vector<std::wstring> argvStr = MakeStringArgv(argv);
 

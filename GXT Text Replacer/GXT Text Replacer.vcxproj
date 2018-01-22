@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4C9C4190-0F75-4B0D-B824-809760775419}</ProjectGuid>
-    <RootNamespace>GXTBuilder</RootNamespace>
+    <RootNamespace>GXTTextReplacer</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

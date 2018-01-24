@@ -487,7 +487,6 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         auto mainBlocktableTuple = ReadTableBlock(inputFile, static_cast<uint32_t>(inputFile.tellg()));
         std::string mainTableName = std::get<std::string>(mainBlocktableTuple);
         uint32_t mainTableOffset = std::get<uint32_t>(mainBlocktableTuple);
-        auto   mainTable = GXTTableBase::InstantiateGXTTable(fileVersion);
 
         const uint32_t	ONE_TABLE_BLOCK_SIZE = 12;
 
@@ -510,10 +509,12 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
 #pragma endregion
 
         //#pragma region "Read TKEY and TDAT sections"
-        mainTable->ReadTKEYAndTDATBlock(inputFile, dwCurrentOffset);
-        size_t entrySize = tableCollection->_mainTable._GXTTable->GetEntrySize();
-        size_t formattedContentSize = tableCollection->_mainTable._GXTTable->GetFormattedContentSize();
-        size_t entryEntryCount = tableCollection->GetMainTable()._GXTTable->GetNumEntries();
+        auto& mainGXTTable = tableCollection->_mainTable._GXTTable;
+
+        mainGXTTable->ReadTKEYAndTDATBlock(inputFile, dwCurrentOffset);
+        size_t entrySize = mainGXTTable->GetEntrySize();
+        size_t formattedContentSize = mainGXTTable->GetFormattedContentSize();
+        size_t entryEntryCount = mainGXTTable->GetNumEntries();
 
         std::wcout << L"Main Table Entry size " << std::to_wstring(entryEntryCount) << L"\n";
         std::wcout << L"Main Table Content size " << std::to_wstring(formattedContentSize) << L"\n";

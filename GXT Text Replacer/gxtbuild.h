@@ -38,6 +38,7 @@ public:
     virtual size_t	GetEntrySize() = 0;
     virtual void	WriteOutEntries(std::ostream& stream) = 0;
     virtual void	WriteOutContent(std::ostream& stream) = 0;
+    virtual size_t	ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint32_t offset);
     virtual void	ReadEntireContent(std::ifstream& inputStream, const uint32_t offset, const size_t size) = 0;
     virtual void	PushFormattedChar(int character) = 0;
 

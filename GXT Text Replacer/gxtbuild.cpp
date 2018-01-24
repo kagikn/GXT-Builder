@@ -272,7 +272,7 @@ static std::pair<std::string, uint32_t> ReadTableBlock(std::ifstream& inputStrea
     return std::make_pair(tableName, tableOffset);
 }
 
-static size_t ReadTKEYAndTDATBlock(std::ifstream& inputStream, std::unique_ptr<GXTTableBase>& table, const uint32_t offset)
+size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint32_t offset)
 {
     constexpr uint32_t TKEY_HEADER_SIZE = 4;
     constexpr uint32_t BLOCK_SIZE_STORAGE_SIZE = 4;
@@ -281,8 +281,8 @@ static size_t ReadTKEYAndTDATBlock(std::ifstream& inputStream, std::unique_ptr<G
     static const std::array<const char, TKEY_HEADER_SIZE> HEADER_TKEY = { 'T', 'K', 'E', 'Y' };
     static std::array<char, BLOCK_SIZE_STORAGE_SIZE> sizeBuf;
 
-    const bool usesHashForEntryName = table->UsesHashForEntryName();
-    const size_t	ONE_ENTRY_SIZE = table->GetEntrySize();
+    const bool usesHashForEntryName = UsesHashForEntryName();
+    const size_t	ONE_ENTRY_SIZE = GetEntrySize();
 
     inputStream.seekg(offset, std::ios_base::beg);
 
@@ -313,7 +313,7 @@ static size_t ReadTKEYAndTDATBlock(std::ifstream& inputStream, std::unique_ptr<G
             inputStream.read(&entryBuf[0], 4);
             const uint32_t	entryHash = *(uint32_t*)entryBuf.data();
 
-            table->InsertEntry(entryHash, entryOffset);
+            InsertEntry(entryHash, entryOffset);
         }
         else
         {
@@ -322,7 +322,7 @@ static size_t ReadTKEYAndTDATBlock(std::ifstream& inputStream, std::unique_ptr<G
 
             inputStream.read(&entryBuf[0], 8);
 
-            table->InsertEntry(entryBuf, entryOffset);
+            InsertEntry(entryBuf, entryOffset);
         }
     }
 
@@ -341,8 +341,8 @@ static size_t ReadTKEYAndTDATBlock(std::ifstream& inputStream, std::unique_ptr<G
 
     inputStream.read(sizeBuf.data(), BLOCK_SIZE_STORAGE_SIZE);
     const uint32_t	TDATBlockSize = *(uint32_t*)sizeBuf.data();
-    table->ReadEntireContent(inputStream, static_cast<uint32_t>(inputStream.tellg()), TDATBlockSize);
-
+    ReadEntireContent(inputStream, static_cast<uint32_t>(inputStream.tellg()), TDATBlockSize);
+    std::wcout << L"Main Table Entry size " << std::to_wstring(GetNumEntries()) << L"\n";
     return static_cast<size_t>(inputStream.tellg()) - offset;
 }
 
@@ -487,7 +487,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         auto mainBlocktableTuple = ReadTableBlock(inputFile, static_cast<uint32_t>(inputFile.tellg()));
         std::string mainTableName = std::get<std::string>(mainBlocktableTuple);
         uint32_t mainTableOffset = std::get<uint32_t>(mainBlocktableTuple);
-        auto	mainTable = GXTTableBase::InstantiateGXTTable(fileVersion);
+        auto   mainTable = GXTTableBase::InstantiateGXTTable(fileVersion);
 
         const uint32_t	ONE_TABLE_BLOCK_SIZE = 12;
 
@@ -510,8 +510,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
 #pragma endregion
 
         //#pragma region "Read TKEY and TDAT sections"
-
-        ReadTKEYAndTDATBlock(inputFile, mainTable, dwCurrentOffset);
+        mainTable->ReadTKEYAndTDATBlock(inputFile, dwCurrentOffset);
         size_t entrySize = tableCollection->_mainTable._GXTTable->GetEntrySize();
         size_t formattedContentSize = tableCollection->_mainTable._GXTTable->GetFormattedContentSize();
         size_t entryEntryCount = tableCollection->GetMainTable()._GXTTable->GetNumEntries();

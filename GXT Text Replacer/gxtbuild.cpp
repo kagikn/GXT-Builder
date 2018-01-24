@@ -502,9 +502,6 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
             uint32_t offset = std::get<uint32_t>(tableTuple);
 
             tableCollection->AddNewMissionTable(tableName, offset);
-
-            dwCurrentOffset += ONE_TABLE_BLOCK_SIZE;
-            inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
         }
 #pragma endregion
 
@@ -512,6 +509,12 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         auto& mainGXTTable = tableCollection->GetMainTable()._GXTTable;
 
         mainGXTTable->ReadTKEYAndTDATBlock(inputFile, dwCurrentOffset);
+
+        dwCurrentOffset += static_cast<uint32_t>(mainGXTTable->ReadTKEYAndTDATBlock(inputFile, dwCurrentOffset));
+        // Align to 4 bytes
+        dwCurrentOffset = (dwCurrentOffset + 4 - 1) & ~(4 - 1);
+        inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
+
         size_t entrySize = mainGXTTable->GetEntrySize();
         size_t formattedContentSize = mainGXTTable->GetFormattedContentSize();
         size_t entryEntryCount = mainGXTTable->GetNumEntries();

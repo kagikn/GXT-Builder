@@ -81,7 +81,7 @@ class GXTTableCollection
 {
 public:
     GXTTableBlockInfo _mainTable;
-    std::map<std::string, GXTTableBlockInfo> _missionTable;
+    std::map<std::string, std::unique_ptr<GXTTableBlockInfo>> _missionTable;
 
     GXTTableCollection(std::string& tableName, uint32_t absoluteMainTableOffset, eGXTVersion fileVersion);
 
@@ -89,7 +89,7 @@ public:
     {
         return _mainTable;
     }
-    std::map<std::string, GXTTableBlockInfo>& GetMissionTableMap()
+    std::map<std::string, std::unique_ptr<GXTTableBlockInfo>>& GetMissionTableMap()
     {
         return _missionTable;
     }

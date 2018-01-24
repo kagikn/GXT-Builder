@@ -117,7 +117,7 @@ GXTTableCollection::GXTTableCollection(std::string& tableName, uint32_t absolute
 void GXTTableCollection::AddNewMissionTable(std::string& tableName, uint32_t absoluteTableOffset)
 {
     auto tableInfo = GXTTableBlockInfo(tableName, absoluteTableOffset, _fileVersion);
-    //_missionTable[tableName] = std::move(tableInfo);
+    _missionTable[tableName] = std::move(std::unique_ptr<GXTTableBlockInfo>(new GXTTableBlockInfo(tableName, absoluteTableOffset, _fileVersion)));
 }
 
 namespace VC
@@ -529,7 +529,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
             std::array<char, 8> tableNameBuf;
 
             auto& blockInfo = table.second;
-            dwCurrentOffset = blockInfo._absoluteOffset;
+            dwCurrentOffset = blockInfo->_absoluteOffset;
 
             inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
             inputFile.read(tableNameBuf.data(), 8);
@@ -544,7 +544,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
 
             dwCurrentOffset += 8;
 
-            auto& missionGXTTable = table.second._GXTTable;
+            auto& missionGXTTable = table.second->_GXTTable;
             dwCurrentOffset += static_cast<uint32_t>(missionGXTTable->ReadTKEYAndTDATBlock(inputFile, dwCurrentOffset));
 
             // Align to 4 bytes

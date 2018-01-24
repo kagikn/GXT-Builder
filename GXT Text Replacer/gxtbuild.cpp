@@ -113,7 +113,7 @@ GXTTableCollection::GXTTableCollection(std::pair<std::string, GXTTableBlockInfo>
 {
 }
 
-GXTTableCollection::GXTTableCollection(std::pair<std::string, GXTTableBlockInfo> mainTable, std::map<std::string, GXTTableBlockInfo> missionTable) :_mainTable(std::move(mainTable)), _missionTable(missionTable)
+GXTTableCollection::GXTTableCollection(std::pair<std::string, GXTTableBlockInfo> mainTable, std::map<std::string, GXTTableBlockInfo> missionTable) : _mainTable(std::move(mainTable)), _missionTable(missionTable)
 {
 }
 
@@ -149,7 +149,7 @@ namespace VC
 
         inputStream.seekg(offset, std::ios_base::beg);
 
-        FormattedContent = std::basic_string<character_t>{buffer.begin(), buffer.end()};
+        FormattedContent = std::basic_string<character_t>{ buffer.begin(), buffer.end() };
     }
 
     void GXTTable::PushFormattedChar(int character)
@@ -516,9 +516,9 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         }
 #pragma endregion
 
-//#pragma region "Read TKEY and TDAT sections"
+        //#pragma region "Read TKEY and TDAT sections"
 
-        //auto mainGXTTable = std::move(tableCollection->GetMainTablePair());
+                //auto mainGXTTable = std::move(tableCollection->GetMainTablePair());
         ReadTKEYAndTDATBlock(inputFile, mainTable, dwCurrentOffset);
         size_t entrySize = tableCollection->GetMainTablePair().second._GXTTable->GetEntrySize();
         size_t formattedContentSize = tableCollection->GetMainTablePair().second._GXTTable->GetFormattedContentSize();
@@ -553,7 +553,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
             ReadTKEYAndTDATBlock(inputFile, missionGXTTable, dwCurrentOffset);
         }*/
 
-//#pragma endregion
+        //#pragma endregion
     }
     else
     {

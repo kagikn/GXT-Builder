@@ -199,7 +199,7 @@ namespace SA
 
         inputStream.seekg(offset, std::ios_base::beg);
 
-        FormattedContent = std::basic_string<character_t>{ buffer.begin(), buffer.end() };
+        FormattedContent = std::move(std::basic_string<character_t>{ buffer.begin(), buffer.end() });
     }
 
     template<typename Character>
@@ -335,20 +335,13 @@ static size_t ReadTKEYAndTDATBlock(std::ifstream& inputStream, std::unique_ptr<G
         std::string errorStr = std::string("The TDAT header wasn't found! Offset: ");
         errorStr.append(std::to_string(inputStream.tellg()));
         errorStr.append("\n");
-        //aaa
         throw std::runtime_error(errorStr);
         return 0;
     }
 
-    inputStream.seekg(BLOCK_SIZE_STORAGE_SIZE, std::ios_base::cur);
-
     inputStream.read(sizeBuf.data(), BLOCK_SIZE_STORAGE_SIZE);
     const uint32_t	TDATBlockSize = *(uint32_t*)sizeBuf.data();
-
-    inputStream.seekg(BLOCK_SIZE_STORAGE_SIZE, std::ios_base::cur);
-
-    std::string content(TDATBlockSize, NULL);
-    inputStream.read(&content[0], TDATBlockSize);
+    table->ReadEntireContent(inputStream, static_cast<uint32_t>(inputStream.tellg()), TDATBlockSize);
 
     return static_cast<size_t>(inputStream.tellg()) - offset;
 }
@@ -501,7 +494,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         dwCurrentOffset += ONE_TABLE_BLOCK_SIZE;
         inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
 
-        auto tableCollection = GXTTableCollection(mainTableName, mainTableOffset, fileVersion);
+        auto tableCollection = std::make_unique<GXTTableCollection>(mainTableName, mainTableOffset, fileVersion);
 
         for (uint32_t i = 12; i < dwBlockSize; i += ONE_TABLE_BLOCK_SIZE)
         {
@@ -509,7 +502,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
             std::string tableName = std::get<std::string>(tableTuple);
             uint32_t offset = std::get<uint32_t>(tableTuple);
 
-            tableCollection.AddNewMissionTable(tableName, offset);
+            tableCollection->AddNewMissionTable(tableName, offset);
 
             dwCurrentOffset += ONE_TABLE_BLOCK_SIZE;
             inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
@@ -519,10 +512,11 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         //#pragma region "Read TKEY and TDAT sections"
 
         ReadTKEYAndTDATBlock(inputFile, mainTable, dwCurrentOffset);
-        size_t entrySize = tableCollection.GetMainTable()._GXTTable->GetEntrySize();
-        size_t formattedContentSize = tableCollection.GetMainTable()._GXTTable->GetFormattedContentSize();
+        size_t entrySize = tableCollection->_mainTable._GXTTable->GetEntrySize();
+        size_t formattedContentSize = tableCollection->_mainTable._GXTTable->GetFormattedContentSize();
+        size_t entryEntryCount = tableCollection->GetMainTable()._GXTTable->GetNumEntries();
 
-        std::wcout << L"Main Table Entry size " << std::to_wstring(entrySize) << L"\n";
+        std::wcout << L"Main Table Entry size " << std::to_wstring(entryEntryCount) << L"\n";
         std::wcout << L"Main Table Content size " << std::to_wstring(formattedContentSize) << L"\n";
 
         //auto missionGXTTables = tableCollection->GetMissionTableMap();

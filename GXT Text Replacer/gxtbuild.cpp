@@ -508,8 +508,6 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         //#pragma region "Read TKEY and TDAT sections"
         auto& mainGXTTable = tableCollection->GetMainTable()._GXTTable;
 
-        mainGXTTable->ReadTKEYAndTDATBlock(inputFile, dwCurrentOffset);
-
         dwCurrentOffset += static_cast<uint32_t>(mainGXTTable->ReadTKEYAndTDATBlock(inputFile, dwCurrentOffset));
         // Align to 4 bytes
         dwCurrentOffset = (dwCurrentOffset + 4 - 1) & ~(4 - 1);

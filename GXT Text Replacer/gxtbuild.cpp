@@ -519,6 +519,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         std::wcout << L"Main Table Entry size " << std::to_wstring(entryEntryCount) << L"\n";
         std::wcout << L"Main Table Content size " << std::to_wstring(formattedContentSize) << L"\n";
 
+        return tableCollection;
         //auto missionGXTTables = tableCollection->GetMissionTableMap();
 
         /*for (const auto& table : missionGXTTables)
@@ -551,6 +552,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
     else
     {
         throw std::runtime_error("Can't open " + std::string(fileName.begin(), fileName.end()) + ".gxt!");
+        return nullptr;
     }
 }
 

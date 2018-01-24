@@ -509,7 +509,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
 #pragma endregion
 
         //#pragma region "Read TKEY and TDAT sections"
-        auto& mainGXTTable = tableCollection->_mainTable._GXTTable;
+        auto& mainGXTTable = tableCollection->GetMainTable()._GXTTable;
 
         mainGXTTable->ReadTKEYAndTDATBlock(inputFile, dwCurrentOffset);
         size_t entrySize = mainGXTTable->GetEntrySize();
@@ -519,10 +519,9 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         std::wcout << L"Main Table Entry size " << std::to_wstring(entryEntryCount) << L"\n";
         std::wcout << L"Main Table Content size " << std::to_wstring(formattedContentSize) << L"\n";
 
-        return tableCollection;
-        //auto missionGXTTables = tableCollection->GetMissionTableMap();
+        auto& missionGXTTables = tableCollection->GetMissionTableMap();
 
-        /*for (const auto& table : missionGXTTables)
+        for (const auto& table : missionGXTTables)
         {
             std::array<char, 8> tableNameBuf;
 
@@ -540,12 +539,16 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
                 return nullptr;
             }
 
-            inputFile.seekg(8, std::ios_base::cur);
             dwCurrentOffset += 8;
 
-            auto missionGXTTable = table.second._GXTTable;
-            ReadTKEYAndTDATBlock(inputFile, missionGXTTable, dwCurrentOffset);
-        }*/
+            auto& missionGXTTable = table.second._GXTTable;
+            dwCurrentOffset += static_cast<uint32_t>(missionGXTTable->ReadTKEYAndTDATBlock(inputFile, dwCurrentOffset));
+
+            // Align to 4 bytes
+            dwCurrentOffset = (dwCurrentOffset + 4 - 1) & ~(4 - 1);
+        }
+
+        return tableCollection;
 
         //#pragma endregion
     }

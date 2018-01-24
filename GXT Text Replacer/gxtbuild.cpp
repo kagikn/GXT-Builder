@@ -109,6 +109,13 @@ static const size_t CHARACTER_MAP_SIZE = CHARACTER_MAP_WIDTH * CHARACTER_MAP_HEI
 
 typedef std::array<uint32_t, CHARACTER_MAP_SIZE> CharMapArray;
 
+GXTTableCollection::GXTTableCollection(std::pair<std::string, GXTTableBlockInfo> mainTable) :_mainTable(std::move(mainTable))
+{
+}
+
+GXTTableCollection::GXTTableCollection(std::pair<std::string, GXTTableBlockInfo> mainTable, std::map<std::string, GXTTableBlockInfo> missionTable) :_mainTable(std::move(mainTable)), _missionTable(missionTable)
+{
+}
 
 namespace VC
 {
@@ -135,6 +142,16 @@ namespace VC
         stream.write(reinterpret_cast<const char*>(FormattedContent.c_str()), FormattedContent.size() * sizeof(character_t));
     }
 
+    void GXTTable::ReadEntireContent(std::ifstream& inputStream, const uint32_t offset, const size_t size)
+    {
+        std::vector<uint16_t> buffer;
+        buffer.resize(size / sizeof(uint16_t));
+
+        inputStream.seekg(offset, std::ios_base::beg);
+
+        FormattedContent = std::basic_string<character_t>{buffer.begin(), buffer.end()};
+    }
+
     void GXTTable::PushFormattedChar(int character)
     {
         FormattedContent.push_back(static_cast<character_t>(character));
@@ -148,6 +165,11 @@ namespace SA
     {
         uint32_t entryHash = crc32FromUpcaseString(entryName.c_str());
         return Entries.emplace(entryHash, static_cast<uint32_t>(offset * sizeof(character_t))).second != false;
+    }
+    template<typename Character>
+    bool GXTTable<Character>::InsertEntry(const uint32_t crc32EntryHash, uint32_t offset)
+    {
+        return Entries.emplace(crc32EntryHash, static_cast<uint32_t>(offset * sizeof(character_t))).second != false;
     }
 
     template<typename Character>
@@ -164,6 +186,17 @@ namespace SA
     void GXTTable<Character>::WriteOutContent(std::ostream& stream)
     {
         stream.write(reinterpret_cast<const char*>(FormattedContent.c_str()), FormattedContent.size() * sizeof(character_t));
+    }
+
+    template<typename Character>
+    void GXTTable<Character>::ReadEntireContent(std::ifstream& inputStream, const uint32_t offset, const size_t size)
+    {
+        std::vector<character_t> buffer;
+        buffer.resize(size / sizeof(character_t));
+
+        inputStream.seekg(offset, std::ios_base::beg);
+
+        FormattedContent = std::basic_string<character_t>{ buffer.begin(), buffer.end() };
     }
 
     template<typename Character>
@@ -193,6 +226,129 @@ std::unique_ptr<GXTFileBase> GXTFileBase::InstantiateBuilder(eGXTVersion version
 
     }
     return ptr;
+}
+
+std::unique_ptr<GXTTableBase> GXTTableBase::InstantiateGXTTable(eGXTVersion version)
+{
+    std::unique_ptr<GXTTableBase> ptr;
+    switch (version)
+    {
+    case GXT_VC:
+        ptr = std::make_unique< VC::GXTTable>();
+        break;
+    case GXT_SA:
+        ptr = std::make_unique< SA::GXTTable<uint8_t> >();
+        break;
+    case GXT_SA_MOBILE:
+        ptr = std::make_unique< SA::GXTTable<uint16_t> >();
+        break;
+    default:
+        throw std::runtime_error(std::string("Trying to instantiate an unsupported GXT table version " + version) + "!");
+        break;
+
+    }
+    return ptr;
+}
+
+static std::tuple<std::string, uint32_t> ReadTableBlock(std::ifstream& inputStream, const uint32_t offset)
+{
+    constexpr uint32_t TABLE_NAME_SIZE = 8;
+    constexpr uint32_t OFFSET_STORAGE_SIZE = 4;
+
+    static std::string tableName(TABLE_NAME_SIZE, NULL);
+    static std::array<char, OFFSET_STORAGE_SIZE> offsetBuf;
+
+    inputStream.seekg(offset, std::ios_base::beg);
+
+    inputStream.read(&tableName[0], TABLE_NAME_SIZE);
+    inputStream.seekg(TABLE_NAME_SIZE, std::ios_base::cur);
+
+    inputStream.read(offsetBuf.data(), OFFSET_STORAGE_SIZE);
+    const uint32_t tableOffset = *(uint32_t*)offsetBuf.data();
+
+    return std::make_tuple(tableName, tableOffset);
+}
+
+static size_t ReadTKEYAndTDATBlock(std::ifstream& inputStream, std::unique_ptr<GXTTableBase>& table, const uint32_t offset)
+{
+    constexpr uint32_t TKEY_HEADER_SIZE = 4;
+    constexpr uint32_t BLOCK_SIZE_STORAGE_SIZE = 4;
+
+    static std::array<char, TKEY_HEADER_SIZE> headerBuf;
+    static const std::array<const char, TKEY_HEADER_SIZE> HEADER_TKEY = { 'T', 'K', 'E', 'Y' };
+    static std::array<char, BLOCK_SIZE_STORAGE_SIZE> sizeBuf;
+
+    const bool usesHashForEntryName = table->UsesHashForEntryName();
+    const size_t	ONE_ENTRY_SIZE = table->GetEntrySize();
+
+    inputStream.seekg(offset, std::ios_base::beg);
+    inputStream.read(headerBuf.data(), TKEY_HEADER_SIZE);
+
+    if (!std::equal(headerBuf.cbegin(), headerBuf.cend(), HEADER_TKEY.cbegin()))
+    {
+        throw std::runtime_error("The TKEY header wasn't found!");
+        return 0;
+    }
+    inputStream.seekg(BLOCK_SIZE_STORAGE_SIZE, std::ios_base::cur);
+
+    inputStream.read(sizeBuf.data(), BLOCK_SIZE_STORAGE_SIZE);
+    const uint32_t	TKEYBlockSize = *(uint32_t*)sizeBuf.data();
+
+    inputStream.seekg(BLOCK_SIZE_STORAGE_SIZE, std::ios_base::cur);
+
+    std::array<char, 4> entryOffsetBuf;
+    std::string entryBuf(8, NULL);
+
+    for (size_t i = 0; i < TKEYBlockSize; i += ONE_ENTRY_SIZE)
+    {
+        if (usesHashForEntryName)
+        {
+            inputStream.read(entryOffsetBuf.data(), 4);
+            const uint32_t	entryOffset = *(uint32_t*)entryBuf.data();
+
+            inputStream.seekg(4, std::ios_base::cur);
+            inputStream.read(&entryBuf[0], 4);
+            const uint32_t	entryHash = *(uint32_t*)entryBuf.data();
+
+            table->InsertEntry(entryHash, entryOffset);
+
+            inputStream.seekg(4, std::ios_base::cur);
+        }
+        else
+        {
+            inputStream.read(entryOffsetBuf.data(), 4);
+            const uint32_t	entryOffset = *(uint32_t*)entryBuf.data();
+
+            inputStream.seekg(4, std::ios_base::cur);
+            inputStream.read(&entryBuf[0], 8);
+
+            table->InsertEntry(entryBuf, entryOffset);
+
+            inputStream.seekg(8, std::ios_base::cur);
+        }
+    }
+
+    constexpr uint32_t TDAT_HEADER_SIZE = 4;
+    static const std::array<const char, TDAT_HEADER_SIZE> HEADER_TDAT = { 'T', 'D', 'A', 'T' };
+    inputStream.read(headerBuf.data(), TDAT_HEADER_SIZE);
+
+    if (!std::equal(headerBuf.cbegin(), headerBuf.cend(), HEADER_TDAT.cbegin()))
+    {
+        throw std::runtime_error("The TDAT header wasn't found!");
+        return 0;
+    }
+
+    inputStream.seekg(BLOCK_SIZE_STORAGE_SIZE, std::ios_base::cur);
+
+    inputStream.read(sizeBuf.data(), BLOCK_SIZE_STORAGE_SIZE);
+    const uint32_t	TDATBlockSize = *(uint32_t*)sizeBuf.data();
+
+    inputStream.seekg(BLOCK_SIZE_STORAGE_SIZE, std::ios_base::cur);
+
+    std::string content(TDATBlockSize, NULL);
+    inputStream.read(&content[0], TDATBlockSize);
+
+    return static_cast<size_t>(inputStream.tellg()) - offset;
 }
 
 // NOTE: Some GXT editors seem to use a different structure (offset differences), but this structure
@@ -272,6 +428,136 @@ void GXTFileBase::ProduceGXTFile(const std::wstring& szLangName, const tableMap_
     else
     {
         throw std::runtime_error("Can't create " + std::string(szLangName.begin(), szLangName.end()) + ".gxt!");
+    }
+}
+
+static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileName, const eGXTVersion fileVersion)
+{
+    std::unique_ptr<GXTFileBase>	fileBuilder = GXTFileBase::InstantiateBuilder(fileVersion);
+    std::ifstream	inputFile(fileName, std::ifstream::binary);
+
+    if (inputFile.is_open())
+    {
+        uint32_t		dwCurrentOffset = 0;
+        uint32_t		headerValue = 0;
+
+        constexpr uint32_t HEADER_SIZE = 4;
+        constexpr uint32_t BLOCK_SIZE_STORAGE_SIZE = 4;
+        std::array<char, HEADER_SIZE> headerBuf;
+        std::array<char, BLOCK_SIZE_STORAGE_SIZE> sizeBuf;
+
+#pragma region "Header"
+        if (fileVersion == eGXTVersion::GXT_SA || fileVersion == eGXTVersion::GXT_SA_MOBILE)
+        {
+            inputFile.read(headerBuf.data(), HEADER_SIZE);
+
+            headerValue = *(uint32_t*)headerBuf.data();
+
+            if (headerValue != 0x080004 && headerValue != 0x100004)
+            {
+                throw std::runtime_error("Incorrect GXT version!");
+                return nullptr;
+            }
+
+            dwCurrentOffset += HEADER_SIZE;
+            inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
+        }
+#pragma endregion
+
+#pragma region "Read TABL section"
+        std::array<const char, 4> HEADER_TABL = { 'T', 'A', 'B', 'L' };
+
+        inputFile.read(headerBuf.data(), HEADER_SIZE);
+        if (!std::equal(headerBuf.cbegin(), headerBuf.cend(), HEADER_TABL.cbegin()))
+        {
+            throw std::runtime_error("The TABL header wasn't found!");
+            return nullptr;
+        }
+
+        dwCurrentOffset += HEADER_SIZE;
+        inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
+
+        inputFile.read(sizeBuf.data(), BLOCK_SIZE_STORAGE_SIZE);
+        const uint32_t	dwBlockSize = *(uint32_t*)sizeBuf.data();
+
+        if (dwBlockSize < 12)
+        {
+            throw std::runtime_error("The GXT file is corrupted!");
+            return nullptr;
+        }
+
+        dwCurrentOffset += 4;
+        inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
+
+        auto mainBlocktableTuple = ReadTableBlock(inputFile, static_cast<uint32_t>(inputFile.tellg()));
+        std::string mainTableName = std::get<std::string>(mainBlocktableTuple);
+        uint32_t mainTableOffset = std::get<uint32_t>(mainBlocktableTuple);
+        auto	mainTable = GXTTableBase::InstantiateGXTTable(fileVersion);
+
+        const uint32_t	ONE_TABLE_BLOCK_SIZE = 12;
+
+        dwCurrentOffset += ONE_TABLE_BLOCK_SIZE;
+        inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
+
+        auto mainTableBlockInfo = GXTTableBlockInfo(mainTableOffset, fileVersion);
+        auto tableCollection = std::make_unique<GXTTableCollection>(std::make_pair(mainTableName, std::move(mainTableBlockInfo)));
+
+        for (uint32_t i = 12; i < dwBlockSize; i += ONE_TABLE_BLOCK_SIZE)
+        {
+            auto tableTuple = ReadTableBlock(inputFile, static_cast<uint32_t>(inputFile.tellg()));
+            std::string tableName = std::get<std::string>(tableTuple);
+            uint32_t offset = std::get<uint32_t>(tableTuple);
+
+            auto	tableBlockInfo = GXTTableBlockInfo{ offset, fileVersion };
+            tableCollection->GetMissionTableMap()[tableName] = std::move(tableBlockInfo);
+
+            dwCurrentOffset += ONE_TABLE_BLOCK_SIZE;
+            inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
+        }
+#pragma endregion
+
+//#pragma region "Read TKEY and TDAT sections"
+
+        //auto mainGXTTable = std::move(tableCollection->GetMainTablePair());
+        ReadTKEYAndTDATBlock(inputFile, mainTable, dwCurrentOffset);
+        size_t entrySize = tableCollection->GetMainTablePair().second._GXTTable->GetEntrySize();
+        size_t formattedContentSize = tableCollection->GetMainTablePair().second._GXTTable->GetFormattedContentSize();
+
+        std::wcout << L"Main Table Entry size " << std::to_wstring(entrySize) << L"\n";
+        std::wcout << L"Main Table Content size " << std::to_wstring(formattedContentSize) << L"\n";
+
+        //auto missionGXTTables = tableCollection->GetMissionTableMap();
+
+        /*for (const auto& table : missionGXTTables)
+        {
+            std::array<char, 8> tableNameBuf;
+
+            auto& blockInfo = table.second;
+            dwCurrentOffset = blockInfo._absoluteOffset;
+
+            inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
+            inputFile.read(tableNameBuf.data(), 8);
+
+            auto& tableName = table.first;
+
+            if (!std::equal(tableNameBuf.cbegin(), tableNameBuf.cend(), tableName.cbegin()))
+            {
+                throw std::runtime_error("The table name and TKEY header name does not equal!");
+                return nullptr;
+            }
+
+            inputFile.seekg(8, std::ios_base::cur);
+            dwCurrentOffset += 8;
+
+            auto missionGXTTable = table.second._GXTTable;
+            ReadTKEYAndTDATBlock(inputFile, missionGXTTable, dwCurrentOffset);
+        }*/
+
+//#pragma endregion
+    }
+    else
+    {
+        throw std::runtime_error("Can't open " + std::string(fileName.begin(), fileName.end()) + ".gxt!");
     }
 }
 
@@ -666,6 +952,16 @@ std::wstring GetFileNameNoExtension(std::wstring path)
     return path;
 }
 
+std::wstring GetFileExtension(std::wstring path)
+{
+    std::wstring::size_type extPos = path.find_last_of(L'.');
+    if (extPos != std::wstring::npos)
+        path = path.substr(extPos, path.length() - extPos);
+    else
+        path = std::wstring();
+    return path;
+}
+
 static std::vector<std::wstring> MakeStringArgv(wchar_t* argv[])
 {
     std::vector<std::wstring> result;
@@ -702,14 +998,15 @@ int wmain(int argc, wchar_t* argv[])
         tableMap_t							TablesMap(compTable);
         std::map<uint32_t, VersionControlMap>	MasterCacheMap;
         std::forward_list<std::ofstream>		SlaveStreamsList;
-        std::wstring							LangName(argvStr[1]);
+        std::wstring							GXTName(argvStr[1]);
+        std::wstring							TextDirectoryToReplace(argvStr[2]);
         std::ofstream							LogFile;
 
         // Parse commandline arguments
         eGXTVersion		fileVersion = GXT_SA;
 
         int	firstStream = 2;
-        for (int i = 2; i < argc; ++i)
+        for (int i = 3; i < argc; ++i)
         {
             if (argvStr[i][0] == '-')
             {
@@ -726,7 +1023,16 @@ int wmain(int argc, wchar_t* argv[])
                 break;
         }
 
-        std::wstring IniDirectory = MakeIniPath(LangName);
+        if (GetFileExtension(GXTName).empty())
+        {
+            GXTName += L".gxt";
+        }
+
+
+
+        return 0;
+
+        /*std::wstring IniDirectory = MakeIniPath(LangName);
         ScopedCurrentDirectory scopedDir;
 
         // Retrieve language name
@@ -799,7 +1105,7 @@ int wmain(int argc, wchar_t* argv[])
         {
             std::cerr << "ERROR: " << e.what();
             return 1;
-        }
+        }*/
     }
     else
     {

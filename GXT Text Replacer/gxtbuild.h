@@ -52,40 +52,39 @@ class GXTTableBlockInfo
 {
 public:
     uint32_t			_absoluteOffset = 0;
+    std::string			_tableName;
     std::unique_ptr<GXTTableBase>				_GXTTable;
 
-    GXTTableBlockInfo(eGXTVersion fileVersion)
+    GXTTableBlockInfo(std::string tableName, eGXTVersion fileVersion)
     {
+        _tableName = tableName;
         _GXTTable = std::move(GXTTableBase::InstantiateGXTTable(fileVersion));
     }
 
-    GXTTableBlockInfo(uint32_t absoluteOffset, const eGXTVersion fileVersion)
+    GXTTableBlockInfo(std::string tableName, uint32_t absoluteOffset, const eGXTVersion fileVersion)
     {
         _absoluteOffset = absoluteOffset;
+        _tableName = tableName;
         _GXTTable = std::move(GXTTableBase::InstantiateGXTTable(fileVersion));
     }
 
-    GXTTableBlockInfo(GXTTableBlockInfo&& r)
+    GXTTableBlockInfo(GXTTableBlockInfo && rhs)
     {
-        _GXTTable = std::move(r._GXTTable);
-    }
-    GXTTableBlockInfo& operator=(GXTTableBlockInfo&& r)
-    {
-        _GXTTable = std::move(r._GXTTable);
-        return *this;
+        _absoluteOffset = rhs._absoluteOffset;
+        _tableName = rhs._tableName;
+        _GXTTable = std::move(rhs._GXTTable);
     }
 };
 
 class GXTTableCollection
 {
 public:
-    std::pair<std::string, GXTTableBlockInfo> _mainTable;
+    GXTTableBlockInfo _mainTable;
     std::map<std::string, GXTTableBlockInfo> _missionTable;
 
-    GXTTableCollection(std::pair<std::string, GXTTableBlockInfo> mainTable);
-    GXTTableCollection(std::pair<std::string, GXTTableBlockInfo> mainTable, std::map<std::string, GXTTableBlockInfo> missionTable);
+    GXTTableCollection(std::string& tableName, uint32_t absoluteMainTableOffset, eGXTVersion fileVersion);
 
-    std::pair<std::string, GXTTableBlockInfo>& GetMainTablePair()
+    GXTTableBlockInfo& GetMainTable()
     {
         return _mainTable;
     }
@@ -94,17 +93,10 @@ public:
         return _missionTable;
     }
 
-    /*GXTTableCollection(GXTTableCollection&& r)
-    {
-        _mainTable = std::move(r._mainTable);
-        _missionTable = std::move(r._missionTable);
-    }
-    GXTTableCollection& operator=(GXTTableCollection&& r)
-    {
-        _mainTable = std::move(r._mainTable);
-        _missionTable = std::move(r._missionTable);
-        return *this;
-    }*/
+    void AddNewMissionTable(std::string& tableName, uint32_t absoluteTableOffset);
+
+private:
+    eGXTVersion _fileVersion;
 };
 
 struct EntryName

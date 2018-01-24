@@ -109,12 +109,15 @@ static const size_t CHARACTER_MAP_SIZE = CHARACTER_MAP_WIDTH * CHARACTER_MAP_HEI
 
 typedef std::array<uint32_t, CHARACTER_MAP_SIZE> CharMapArray;
 
-GXTTableCollection::GXTTableCollection(std::pair<std::string, GXTTableBlockInfo> mainTable) :_mainTable(std::move(mainTable))
+GXTTableCollection::GXTTableCollection(std::string& tableName, uint32_t absoluteMainTableOffset, eGXTVersion fileVersion)
+    :_mainTable(std::move(GXTTableBlockInfo(tableName, absoluteMainTableOffset, fileVersion))), _fileVersion(fileVersion)
 {
 }
 
-GXTTableCollection::GXTTableCollection(std::pair<std::string, GXTTableBlockInfo> mainTable, std::map<std::string, GXTTableBlockInfo> missionTable) : _mainTable(std::move(mainTable)), _missionTable(missionTable)
+void GXTTableCollection::AddNewMissionTable(std::string& tableName, uint32_t absoluteTableOffset)
 {
+    auto tableInfo = GXTTableBlockInfo(tableName, absoluteTableOffset, _fileVersion);
+    //_missionTable[tableName] = std::move(tableInfo);
 }
 
 namespace VC
@@ -245,12 +248,12 @@ std::unique_ptr<GXTTableBase> GXTTableBase::InstantiateGXTTable(eGXTVersion vers
     default:
         throw std::runtime_error(std::string("Trying to instantiate an unsupported GXT table version " + version) + "!");
         break;
-
     }
+
     return ptr;
 }
 
-static std::tuple<std::string, uint32_t> ReadTableBlock(std::ifstream& inputStream, const uint32_t offset)
+static std::pair<std::string, uint32_t> ReadTableBlock(std::ifstream& inputStream, const uint32_t offset)
 {
     constexpr uint32_t TABLE_NAME_SIZE = 8;
     constexpr uint32_t OFFSET_STORAGE_SIZE = 4;
@@ -266,7 +269,7 @@ static std::tuple<std::string, uint32_t> ReadTableBlock(std::ifstream& inputStre
     inputStream.read(offsetBuf.data(), OFFSET_STORAGE_SIZE);
     const uint32_t tableOffset = *(uint32_t*)offsetBuf.data();
 
-    return std::make_tuple(tableName, tableOffset);
+    return std::make_pair(tableName, tableOffset);
 }
 
 static size_t ReadTKEYAndTDATBlock(std::ifstream& inputStream, std::unique_ptr<GXTTableBase>& table, const uint32_t offset)
@@ -282,6 +285,8 @@ static size_t ReadTKEYAndTDATBlock(std::ifstream& inputStream, std::unique_ptr<G
     const size_t	ONE_ENTRY_SIZE = table->GetEntrySize();
 
     inputStream.seekg(offset, std::ios_base::beg);
+
+    std::wcout << L"TKEY Block Offset" << inputStream.tellg() << "\n";
     inputStream.read(headerBuf.data(), TKEY_HEADER_SIZE);
 
     if (!std::equal(headerBuf.cbegin(), headerBuf.cend(), HEADER_TKEY.cbegin()))
@@ -289,15 +294,14 @@ static size_t ReadTKEYAndTDATBlock(std::ifstream& inputStream, std::unique_ptr<G
         throw std::runtime_error("The TKEY header wasn't found!");
         return 0;
     }
-    inputStream.seekg(BLOCK_SIZE_STORAGE_SIZE, std::ios_base::cur);
 
     inputStream.read(sizeBuf.data(), BLOCK_SIZE_STORAGE_SIZE);
     const uint32_t	TKEYBlockSize = *(uint32_t*)sizeBuf.data();
 
-    inputStream.seekg(BLOCK_SIZE_STORAGE_SIZE, std::ios_base::cur);
-
     std::array<char, 4> entryOffsetBuf;
     std::string entryBuf(8, NULL);
+
+    std::wcout << L"TKEY Block Offset" << inputStream.tellg() << "\n";
 
     for (size_t i = 0; i < TKEYBlockSize; i += ONE_ENTRY_SIZE)
     {
@@ -306,25 +310,19 @@ static size_t ReadTKEYAndTDATBlock(std::ifstream& inputStream, std::unique_ptr<G
             inputStream.read(entryOffsetBuf.data(), 4);
             const uint32_t	entryOffset = *(uint32_t*)entryBuf.data();
 
-            inputStream.seekg(4, std::ios_base::cur);
             inputStream.read(&entryBuf[0], 4);
             const uint32_t	entryHash = *(uint32_t*)entryBuf.data();
 
             table->InsertEntry(entryHash, entryOffset);
-
-            inputStream.seekg(4, std::ios_base::cur);
         }
         else
         {
             inputStream.read(entryOffsetBuf.data(), 4);
             const uint32_t	entryOffset = *(uint32_t*)entryBuf.data();
 
-            inputStream.seekg(4, std::ios_base::cur);
             inputStream.read(&entryBuf[0], 8);
 
             table->InsertEntry(entryBuf, entryOffset);
-
-            inputStream.seekg(8, std::ios_base::cur);
         }
     }
 
@@ -334,7 +332,11 @@ static size_t ReadTKEYAndTDATBlock(std::ifstream& inputStream, std::unique_ptr<G
 
     if (!std::equal(headerBuf.cbegin(), headerBuf.cend(), HEADER_TDAT.cbegin()))
     {
-        throw std::runtime_error("The TDAT header wasn't found!");
+        std::string errorStr = std::string("The TDAT header wasn't found! Offset: ");
+        errorStr.append(std::to_string(inputStream.tellg()));
+        errorStr.append("\n");
+        //aaa
+        throw std::runtime_error(errorStr);
         return 0;
     }
 
@@ -499,8 +501,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         dwCurrentOffset += ONE_TABLE_BLOCK_SIZE;
         inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
 
-        auto mainTableBlockInfo = GXTTableBlockInfo(mainTableOffset, fileVersion);
-        auto tableCollection = std::make_unique<GXTTableCollection>(std::make_pair(mainTableName, std::move(mainTableBlockInfo)));
+        auto tableCollection = GXTTableCollection(mainTableName, mainTableOffset, fileVersion);
 
         for (uint32_t i = 12; i < dwBlockSize; i += ONE_TABLE_BLOCK_SIZE)
         {
@@ -508,8 +509,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
             std::string tableName = std::get<std::string>(tableTuple);
             uint32_t offset = std::get<uint32_t>(tableTuple);
 
-            auto	tableBlockInfo = GXTTableBlockInfo{ offset, fileVersion };
-            tableCollection->GetMissionTableMap()[tableName] = std::move(tableBlockInfo);
+            tableCollection.AddNewMissionTable(tableName, offset);
 
             dwCurrentOffset += ONE_TABLE_BLOCK_SIZE;
             inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
@@ -518,10 +518,9 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
 
         //#pragma region "Read TKEY and TDAT sections"
 
-                //auto mainGXTTable = std::move(tableCollection->GetMainTablePair());
         ReadTKEYAndTDATBlock(inputFile, mainTable, dwCurrentOffset);
-        size_t entrySize = tableCollection->GetMainTablePair().second._GXTTable->GetEntrySize();
-        size_t formattedContentSize = tableCollection->GetMainTablePair().second._GXTTable->GetFormattedContentSize();
+        size_t entrySize = tableCollection.GetMainTable()._GXTTable->GetEntrySize();
+        size_t formattedContentSize = tableCollection.GetMainTable()._GXTTable->GetFormattedContentSize();
 
         std::wcout << L"Main Table Entry size " << std::to_wstring(entrySize) << L"\n";
         std::wcout << L"Main Table Content size " << std::to_wstring(formattedContentSize) << L"\n";
@@ -999,14 +998,14 @@ int wmain(int argc, wchar_t* argv[])
         std::map<uint32_t, VersionControlMap>	MasterCacheMap;
         std::forward_list<std::ofstream>		SlaveStreamsList;
         std::wstring							GXTName(argvStr[1]);
-        std::wstring							TextDirectoryToReplace(argvStr[2]);
+        //std::wstring							TextDirectoryToReplace(argvStr[2]);
         std::ofstream							LogFile;
 
         // Parse commandline arguments
         eGXTVersion		fileVersion = GXT_SA;
 
         int	firstStream = 2;
-        for (int i = 3; i < argc; ++i)
+        for (int i = 2; i < argc; ++i)
         {
             if (argvStr[i][0] == '-')
             {
@@ -1028,7 +1027,15 @@ int wmain(int argc, wchar_t* argv[])
             GXTName += L".gxt";
         }
 
-
+        try
+        {
+            ReadGXTFile(GXTName, fileVersion);
+        }
+        catch (std::exception& e)
+        {
+            std::cerr << "ERROR: " << e.what();
+            return 1;
+        }
 
         return 0;
 

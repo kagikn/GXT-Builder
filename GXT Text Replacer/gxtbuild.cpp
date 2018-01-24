@@ -341,9 +341,13 @@ size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint
 
     inputStream.read(sizeBuf.data(), BLOCK_SIZE_STORAGE_SIZE);
     const uint32_t	TDATBlockSize = *(uint32_t*)sizeBuf.data();
+
+    const uint32_t	totalSize = static_cast<uint32_t>(inputStream.tellg()) + TDATBlockSize;
+
     ReadEntireContent(inputStream, static_cast<uint32_t>(inputStream.tellg()), TDATBlockSize);
     std::wcout << L"Main Table Entry size " << std::to_wstring(GetNumEntries()) << L"\n";
-    return static_cast<size_t>(inputStream.tellg()) - offset;
+
+    return totalSize;
 }
 
 // NOTE: Some GXT editors seem to use a different structure (offset differences), but this structure
@@ -502,6 +506,9 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
             uint32_t offset = std::get<uint32_t>(tableTuple);
 
             tableCollection->AddNewMissionTable(tableName, offset);
+
+            dwCurrentOffset += ONE_TABLE_BLOCK_SIZE;
+            inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
         }
 #pragma endregion
 
@@ -525,9 +532,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         for (const auto& table : missionGXTTables)
         {
             std::array<char, 8> tableNameBuf;
-
             auto& blockInfo = table.second;
-            dwCurrentOffset = blockInfo->_absoluteOffset;
 
             inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
             inputFile.read(tableNameBuf.data(), 8);
@@ -536,7 +541,10 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
 
             if (!std::equal(tableNameBuf.cbegin(), tableNameBuf.cend(), tableName.cbegin()))
             {
-                throw std::runtime_error("The table name and TKEY header name does not equal!");
+                std::string errorStr = std::string("The table name and TKEY header name does not equal! Offset: ");
+                errorStr.append(std::to_string(inputFile.tellg()));
+                errorStr.append("\n");
+                throw std::runtime_error(errorStr);
                 return nullptr;
             }
 

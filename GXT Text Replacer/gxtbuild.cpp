@@ -557,8 +557,8 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
             // Align to 4 bytes
             dwCurrentOffset = (dwCurrentOffset + 4 - 1) & ~(4 - 1);
 
-            DEBUG_WCOUT(table.first << L" table entry size " << entryEntryCount << L"\n");
-            DEBUG_WCOUT(table.first << L" table content size " << formattedContentSize << L"\n");
+            DEBUG_WCOUT(table.first << L" table entry size " << missionGXTTable->GetNumEntries() << L"\n");
+            DEBUG_WCOUT(table.first << L" table content size " << missionGXTTable->GetFormattedContentSize() << L"\n");
         }
 
         DEBUG_WCOUT(L"Table counts " << 1 + missionGXTTables.size() << L"\n");

@@ -525,7 +525,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         dwCurrentOffset = (dwCurrentOffset + 4 - 1) & ~(4 - 1);
         inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
 
-        DEBUG_WCOUT(L"Main table entry size " << mainGXTTable->GetNumEntries() << L"\n");
+        DEBUG_WCOUT(L"Main table entry count " << mainGXTTable->GetNumEntries() << L"\n");
         DEBUG_WCOUT(L"Main Table content size " << mainGXTTable->GetFormattedContentSize() << L"\n");
 
         auto& missionGXTTables = tableCollection->GetMissionTableMap();
@@ -557,7 +557,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
             // Align to 4 bytes
             dwCurrentOffset = (dwCurrentOffset + 4 - 1) & ~(4 - 1);
 
-            DEBUG_WCOUT(table.first << L" table entry size " << missionGXTTable->GetNumEntries() << L"\n");
+            DEBUG_WCOUT(table.first << L" table entry count " << missionGXTTable->GetNumEntries() << L"\n");
             DEBUG_WCOUT(table.first << L" table content size " << missionGXTTable->GetFormattedContentSize() << L"\n");
         }
 

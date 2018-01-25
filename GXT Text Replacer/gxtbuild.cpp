@@ -342,7 +342,7 @@ size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint
     inputStream.read(sizeBuf.data(), BLOCK_SIZE_STORAGE_SIZE);
     const uint32_t	TDATBlockSize = *(uint32_t*)sizeBuf.data();
 
-    const uint32_t	totalSize = static_cast<uint32_t>(inputStream.tellg()) + TDATBlockSize;
+    const uint32_t	totalSize = static_cast<uint32_t>(inputStream.tellg()) + TKEYBlockSize + TDATBlockSize;
 
     ReadEntireContent(inputStream, static_cast<uint32_t>(inputStream.tellg()), TDATBlockSize);
     std::wcout << L"Main Table Entry size " << std::to_wstring(GetNumEntries()) << L"\n";

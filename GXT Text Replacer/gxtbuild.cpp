@@ -22,7 +22,12 @@
 #endif
 
 #ifdef _DEBUG
-#define DEBUG_WCOUT(str) do { std::cout << str << std::endl; } while( false )
+#define DEBUG_COUT(str) do { std::cout << str; } while( false )
+#else
+#define DEBUG_COUT(str) do { } while ( false )
+#endif
+#ifdef _DEBUG
+#define DEBUG_WCOUT(str) do { std::wcout << str; } while( false )
 #else
 #define DEBUG_WCOUT(str) do { } while ( false )
 #endif
@@ -557,8 +562,13 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
             // Align to 4 bytes
             dwCurrentOffset = (dwCurrentOffset + 4 - 1) & ~(4 - 1);
 
-            DEBUG_WCOUT(table.first << L" table entry count " << missionGXTTable->GetNumEntries() << L"\n");
-            DEBUG_WCOUT(table.first << L" table content size " << missionGXTTable->GetFormattedContentSize() << L"\n");
+            auto debugTableName = table.first;
+            debugTableName.push_back(':');
+
+            DEBUG_COUT(debugTableName);
+            DEBUG_WCOUT(L" table entry count " << missionGXTTable->GetNumEntries() << L"\n");
+            DEBUG_COUT(debugTableName);
+            DEBUG_WCOUT(L" table content size " << missionGXTTable->GetFormattedContentSize() << L"\n");
         }
 
         DEBUG_WCOUT(L"Table counts " << 1 + missionGXTTables.size() << L"\n");

@@ -274,11 +274,11 @@ static std::pair<std::string, uint32_t> ReadTableBlock(std::ifstream& inputStrea
 
 size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint32_t offset)
 {
-    constexpr uint32_t TKEY_HEADER_SIZE = 4;
+    constexpr uint32_t HEADER_SIZE = 4;
     constexpr uint32_t BLOCK_SIZE_STORAGE_SIZE = 4;
 
-    static std::array<char, TKEY_HEADER_SIZE> headerBuf;
-    static const std::array<const char, TKEY_HEADER_SIZE> HEADER_TKEY = { 'T', 'K', 'E', 'Y' };
+    static std::array<char, HEADER_SIZE> headerBuf;
+    static const std::array<const char, HEADER_SIZE> HEADER_TKEY = { 'T', 'K', 'E', 'Y' };
     static std::array<char, BLOCK_SIZE_STORAGE_SIZE> sizeBuf;
 
     const bool usesHashForEntryName = UsesHashForEntryName();
@@ -287,7 +287,7 @@ size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint
     inputStream.seekg(offset, std::ios_base::beg);
 
     std::wcout << L"TKEY Block Offset" << inputStream.tellg() << "\n";
-    inputStream.read(headerBuf.data(), TKEY_HEADER_SIZE);
+    inputStream.read(headerBuf.data(), HEADER_SIZE);
 
     if (!std::equal(headerBuf.cbegin(), headerBuf.cend(), HEADER_TKEY.cbegin()))
     {
@@ -326,9 +326,8 @@ size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint
         }
     }
 
-    constexpr uint32_t TDAT_HEADER_SIZE = 4;
-    static const std::array<const char, TDAT_HEADER_SIZE> HEADER_TDAT = { 'T', 'D', 'A', 'T' };
-    inputStream.read(headerBuf.data(), TDAT_HEADER_SIZE);
+    static const std::array<const char, HEADER_SIZE> HEADER_TDAT = { 'T', 'D', 'A', 'T' };
+    inputStream.read(headerBuf.data(), HEADER_SIZE);
 
     if (!std::equal(headerBuf.cbegin(), headerBuf.cend(), HEADER_TDAT.cbegin()))
     {
@@ -342,7 +341,7 @@ size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint
     inputStream.read(sizeBuf.data(), BLOCK_SIZE_STORAGE_SIZE);
     const uint32_t	TDATBlockSize = *(uint32_t*)sizeBuf.data();
 
-    const uint32_t	totalSize = static_cast<uint32_t>(inputStream.tellg()) + TKEYBlockSize + TDATBlockSize;
+    const uint32_t	totalSize = TKEYBlockSize + TDATBlockSize + (HEADER_SIZE + BLOCK_SIZE_STORAGE_SIZE) * 2;
 
     ReadEntireContent(inputStream, static_cast<uint32_t>(inputStream.tellg()), TDATBlockSize);
     std::wcout << L"Main Table Entry size " << std::to_wstring(GetNumEntries()) << L"\n";

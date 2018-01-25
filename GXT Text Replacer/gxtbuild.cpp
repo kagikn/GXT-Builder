@@ -21,6 +21,12 @@
 #error GXT Builder must be compiled with Unicode character set
 #endif
 
+#ifdef _DEBUG
+#define DEBUG_WCOUT(str) do { std::cout << str << std::endl; } while( false )
+#else
+#define DEBUG_WCOUT(str) do { } while ( false )
+#endif
+
 static const uint32_t crc32table[256] =
 {
     0x00000000UL, 0x77073096UL, 0xee0e612cUL, 0x990951baUL, 0x076dc419UL,
@@ -286,7 +292,7 @@ size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint
 
     inputStream.seekg(offset, std::ios_base::beg);
 
-    std::wcout << L"TKEY Block Offset" << inputStream.tellg() << "\n";
+    DEBUG_WCOUT(L"TKEY Block Offset" << inputStream.tellg() << "\n");
     inputStream.read(headerBuf.data(), HEADER_SIZE);
 
     if (!std::equal(headerBuf.cbegin(), headerBuf.cend(), HEADER_TKEY.cbegin()))
@@ -301,7 +307,7 @@ size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint
     std::array<char, 4> entryOffsetBuf;
     std::string entryBuf(8, NULL);
 
-    std::wcout << L"TKEY Block Offset" << inputStream.tellg() << "\n";
+    DEBUG_WCOUT(L"TKEY Block Offset" << inputStream.tellg() << "\n");
 
     for (size_t i = 0; i < TKEYBlockSize; i += ONE_ENTRY_SIZE)
     {
@@ -344,7 +350,7 @@ size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint
     const uint32_t	totalSize = TKEYBlockSize + TDATBlockSize + (HEADER_SIZE + BLOCK_SIZE_STORAGE_SIZE) * 2;
 
     ReadEntireContent(inputStream, static_cast<uint32_t>(inputStream.tellg()), TDATBlockSize);
-    std::wcout << L"Main Table Entry size " << std::to_wstring(GetNumEntries()) << L"\n";
+    DEBUG_WCOUT(L"Table Entry count " << GetNumEntries() << L"\n");
 
     return totalSize;
 }
@@ -523,8 +529,8 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         size_t formattedContentSize = mainGXTTable->GetFormattedContentSize();
         size_t entryEntryCount = mainGXTTable->GetNumEntries();
 
-        std::wcout << L"Main Table Entry size " << std::to_wstring(entryEntryCount) << L"\n";
-        std::wcout << L"Main Table Content size " << std::to_wstring(formattedContentSize) << L"\n";
+        DEBUG_WCOUT(L"Main table entry size " << entryEntryCount << L"\n");
+        DEBUG_WCOUT(L"Main Table content size " << formattedContentSize << L"\n");
 
         auto& missionGXTTables = tableCollection->GetMissionTableMap();
 
@@ -554,7 +560,12 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
 
             // Align to 4 bytes
             dwCurrentOffset = (dwCurrentOffset + 4 - 1) & ~(4 - 1);
+
+            DEBUG_WCOUT(table.first << L" table entry size " << entryEntryCount << L"\n");
+            DEBUG_WCOUT(table.first << L" table content size " << formattedContentSize << L"\n");
         }
+
+        DEBUG_WCOUT(L"Table counts " << 1 + missionGXTTables.size() << L"\n");
 
         return tableCollection;
 

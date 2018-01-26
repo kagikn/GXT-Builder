@@ -683,26 +683,6 @@ CharMapArray ParseCharacterMap(const std::wstring& szFileName)
     return characterMap;
 }
 
-void ReadTextFiles(std::wstring const& textDirectory, std::unordered_map<std::string, std::string>& entryMap, std::ofstream& logFile)
-{
-    SetCurrentDirectoryW(textDirectory.c_str());
-
-    // Iterate through a directory
-    WIN32_FIND_DATA		findData;
-    HANDLE				hFoundFiles = FindFirstFile(L"*.txt", &findData);
-
-    if (hFoundFiles != INVALID_HANDLE_VALUE)
-    {
-        do
-            LoadFileContent(findData.cFileName, entryMap, logFile);
-        while (FindNextFile(hFoundFiles, &findData));
-
-        FindClose(hFoundFiles);
-    }
-    else
-        throw std::runtime_error("Error reading files in " + std::string(textDirectory.begin(), textDirectory.end()) + "! Aborting.");
-}
-
 void LoadFileContent(const wchar_t* fileName, std::unordered_map<std::string, std::string>& entryMap, std::ofstream& logFile)
 {
     std::ifstream		InputFile(fileName, std::ifstream::in);

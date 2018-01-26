@@ -584,7 +584,6 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
     }
 }
 
-
 static bool compTable(const EntryName& lhs, const EntryName& rhs)
 {
     if (strncmp(lhs.cName, "MAIN", EntryName::GXT_TABLE_NAME_LEN) == 0)
@@ -643,70 +642,6 @@ CharMapArray ParseCharacterMap(const std::wstring& szFileName)
         throw std::runtime_error("Cannot parse character map file " + std::string(szFileName.begin(), szFileName.end()) + "!");
 
     return characterMap;
-}
-
-void ParseINI(std::wstring strFileName, tableMap_t& TableMap, std::wstring& charMapName, eGXTVersion& fileVersion)
-{
-    const size_t SCRATCH_PAD_SIZE = 32767;
-    WideDelimStringReader reader(SCRATCH_PAD_SIZE);
-
-    strFileName += L".ini";
-
-    // Add .\ if path is relative
-    if (PathIsRelative(strFileName.c_str()) != FALSE)
-    {
-        strFileName.insert(0, L".\\");
-    }
-
-    // Get attributes
-    {
-        GetPrivateProfileString(L"Attribs", L"version", nullptr, reader.GetBuffer(), static_cast<DWORD>(reader.GetSize()), strFileName.c_str());
-        wchar_t* buf = reader.GetBuffer();
-        if (buf[0] != '\0')
-        {
-            if (_wcsicmp(buf, L"vc") == 0)
-                fileVersion = GXT_VC;
-            else if (_wcsicmp(buf, L"sa") == 0)
-                fileVersion = GXT_SA;
-            else if (_wcsicmp(buf, L"samobile") == 0)
-                fileVersion = GXT_SA_MOBILE;
-        }
-    }
-
-    {
-        reader.Reset();
-        GetPrivateProfileString(L"Attribs", L"charmap", nullptr, reader.GetBuffer(), static_cast<DWORD>(reader.GetSize()), strFileName.c_str());
-        if (reader.GetBuffer()[0] == '\0')
-            throw std::runtime_error("charmap entry not specified in " + std::string(strFileName.begin(), strFileName.end()) + "!");
-
-        charMapName = reader.GetBuffer();
-    }
-
-    {
-        // Read all files list
-        reader.Reset();
-        GetPrivateProfileSection(L"Tables", reader.GetBuffer(), static_cast<DWORD>(reader.GetSize()), strFileName.c_str());
-
-        while (const wchar_t* line = reader.GetString())
-        {
-
-            std::unique_ptr<GXTTableBase>	Table;
-            switch (fileVersion)
-            {
-            case GXT_VC:
-                Table = std::make_unique<VC::GXTTable>(line);
-                break;
-            case GXT_SA:
-                Table = std::make_unique<SA::GXTTable<uint8_t> >(line);
-                break;
-            case GXT_SA_MOBILE:
-                Table = std::make_unique<SA::GXTTable<uint16_t> >(line);
-                break;
-            }
-
-            TableMap.emplace(PathFindFileName(line), std::move(Table));
-        }
-    }
 }
 
 void LoadFileContent(const wchar_t* pFileName, tableMap_t::value_type& TableIt, std::map<uint32_t, VersionControlMap>& MasterMap, std::forward_list<std::ofstream>& SlaveStreams, std::ofstream& LogFile, bool bMasterBuilding)

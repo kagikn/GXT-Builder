@@ -13,6 +13,7 @@
 #include <array>
 #include <vector>
 #include <unordered_map>
+#include <filesystem>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -599,13 +600,21 @@ static bool compTable(const EntryName& lhs, const EntryName& rhs)
 
 void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTextConvertingMode textConvertingMode, std::ofstream& logFile)
 {
+    namespace fs = std::experimental::filesystem::v1;
     constexpr auto directorySeparatorChar = L"\\";
 
     const std::wstring mainTableName = Encoding::AnsiStringToWString(_mainTable._tableName);
     std::unordered_map<std::string, std::string> entryMap;
-    if (Directory::Exists(textSourceDirectory + directorySeparatorChar + mainTableName))
+    std::wstring textDirectoryForMainTable(textSourceDirectory + directorySeparatorChar + mainTableName);
+    if (Directory::Exists(textDirectoryForMainTable))
     {
-        ReadTextFiles(textSourceDirectory, entryMap, logFile);
+        for (auto & p : fs::directory_iterator(textDirectoryForMainTable))
+        {
+            if (p.path().extension() == ".txt")
+            {
+                LoadFileContent(p.path().c_str(), entryMap, logFile);
+            }
+        }
     }
 
     auto& missionGXTTables = GetMissionTableMap();
@@ -614,7 +623,13 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTex
         const std::wstring missionTableName = Encoding::AnsiStringToWString(missionTable.second->_tableName);
         if (Directory::Exists(textSourceDirectory + directorySeparatorChar + mainTableName))
         {
-            ReadTextFiles(textSourceDirectory, entryMap, logFile);
+            for (auto & p : fs::directory_iterator(textDirectoryForMainTable))
+            {
+                if (p.path().extension() == ".txt")
+                {
+                    LoadFileContent(p.path().c_str(), entryMap, logFile);
+                }
+            }
         }
     }
 }

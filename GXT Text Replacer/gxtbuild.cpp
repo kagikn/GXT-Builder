@@ -600,9 +600,10 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTex
     constexpr auto directorySeparatorChar = L"\\";
 
     const std::wstring mainTableName = AnsiStringToWString(_mainTable._tableName);
+    std::map<std::string, std::string> entryMap;
     if (DirectoryExists(textSourceDirectory + directorySeparatorChar + mainTableName))
     {
-
+        ReadTextFiles(textSourceDirectory, entryMap, logFile);
     }
 
     auto& missionGXTTables = GetMissionTableMap();
@@ -611,7 +612,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTex
         const std::wstring missionTableName = AnsiStringToWString(missionTable.second->_tableName);
         if (DirectoryExists(textSourceDirectory + directorySeparatorChar + mainTableName))
         {
-
+            ReadTextFiles(textSourceDirectory, entryMap, logFile);
         }
     }
 }

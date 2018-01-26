@@ -160,9 +160,11 @@
     <ClInclude Include="gxtbuild.h" />
     <ClInclude Include="ScopedCurrentDirectory.h" />
     <ClInclude Include="utf8.h" />
+    <ClInclude Include="utility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gxtbuild.cpp" />
+    <ClCompile Include="utility.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

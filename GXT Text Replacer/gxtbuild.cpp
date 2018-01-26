@@ -2,6 +2,7 @@
 
 #include "utf8.h"
 #include "DelimStringReader.h"
+#include "utility.h"
 
 #include <fstream>
 #include <iostream>
@@ -600,9 +601,9 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTex
 {
     constexpr auto directorySeparatorChar = L"\\";
 
-    const std::wstring mainTableName = AnsiStringToWString(_mainTable._tableName);
+    const std::wstring mainTableName = Encoding::AnsiStringToWString(_mainTable._tableName);
     std::unordered_map<std::string, std::string> entryMap;
-    if (DirectoryExists(textSourceDirectory + directorySeparatorChar + mainTableName))
+    if (Directory::Exists(textSourceDirectory + directorySeparatorChar + mainTableName))
     {
         ReadTextFiles(textSourceDirectory, entryMap, logFile);
     }
@@ -610,23 +611,12 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTex
     auto& missionGXTTables = GetMissionTableMap();
     for (const auto& missionTable : missionGXTTables)
     {
-        const std::wstring missionTableName = AnsiStringToWString(missionTable.second->_tableName);
-        if (DirectoryExists(textSourceDirectory + directorySeparatorChar + mainTableName))
+        const std::wstring missionTableName = Encoding::AnsiStringToWString(missionTable.second->_tableName);
+        if (Directory::Exists(textSourceDirectory + directorySeparatorChar + mainTableName))
         {
             ReadTextFiles(textSourceDirectory, entryMap, logFile);
         }
     }
-}
-
-std::wstring AnsiStringToWString(std::string const& src)
-{
-    int iBufferSize = MultiByteToWideChar(CP_ACP, 0, src.c_str(), -1, (wchar_t*)NULL, 0);
-
-    std::vector<wchar_t> dest(iBufferSize, L'\0');
-
-    MultiByteToWideChar(CP_ACP, 0, src.c_str(), -1, dest.data(), iBufferSize);
-
-    return std::wstring(dest.data(), dest.data() + iBufferSize - 1);
 }
 
 static bool MakeSureFileIsValid(std::ifstream& file)
@@ -964,18 +954,6 @@ std::wstring Utf8ToUtf16(const std::string& utf8)
         }
     }
     return utf16;
-}
-
-bool DirectoryExists(const std::wstring& dirName_in)
-{
-    DWORD ftyp = GetFileAttributesW(dirName_in.c_str());
-    if (ftyp == INVALID_FILE_ATTRIBUTES)
-        return false;  //something is wrong with your path!
-
-    if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
-        return true;   // this is a directory!
-
-    return false;    // this is not a directory!
 }
 
 std::wstring GetFileNameNoExtension(std::wstring path)

@@ -1,6 +1,5 @@
 #include "gxtbuild.h"
 
-#include "utf8.h"
 #include "DelimStringReader.h"
 #include "utility.h"
 
@@ -612,7 +611,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTex
         {
             if (p.path().extension() == ".txt")
             {
-                LoadFileContent(p.path().c_str(), entryMap, logFile);
+                EntryLoader::LoadFileContent(p.path().c_str(), entryMap, logFile);
             }
         }
     }
@@ -627,26 +626,11 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTex
             {
                 if (p.path().extension() == ".txt")
                 {
-                    LoadFileContent(p.path().c_str(), entryMap, logFile);
+                    EntryLoader::LoadFileContent(p.path().c_str(), entryMap, logFile);
                 }
             }
         }
     }
-}
-
-static bool MakeSureFileIsValid(std::ifstream& file)
-{
-    std::istreambuf_iterator<char> it(file.rdbuf());
-    std::istreambuf_iterator<char> eos;
-    if (!utf8::is_valid(it, eos))
-        return false;
-
-    file.seekg(0, std::ios_base::beg);
-
-    // Skip BOM (if exists)
-    // starts_with_bom advances the pointer all the time, so we have to call seekg anyway
-    file.seekg(utf8::starts_with_bom(it, eos) ? 3 : 0, std::ios_base::beg);
-    return true;
 }
 
 CharMapArray ParseCharacterMap(const std::wstring& szFileName)
@@ -681,67 +665,6 @@ CharMapArray ParseCharacterMap(const std::wstring& szFileName)
         throw std::runtime_error("Cannot parse character map file " + std::string(szFileName.begin(), szFileName.end()) + "!");
 
     return characterMap;
-}
-
-void LoadFileContent(const wchar_t* fileName, std::unordered_map<std::string, std::string>& entryMap, std::ofstream& logFile)
-{
-    std::ifstream		InputFile(fileName, std::ifstream::in);
-
-    if (InputFile.is_open())
-    {
-        std::wcout << L"Reading entries from " << fileName << L"...\n";
-
-        if (!MakeSureFileIsValid(InputFile))
-        {
-            std::wcerr << L"ERROR: File " << fileName << " contains invalid UTF-8 characters!\n";
-            return;
-        }
-
-        uint64_t lineCount = 0;
-        std::string	fileLine;
-        while (std::getline(InputFile, fileLine))
-        {
-            lineCount++;
-
-            if (!fileLine.empty() && fileLine[0] != '#')
-            {
-                // Extract entry name
-                std::string::size_type tabPos = fileLine.find_first_of('\t');
-                if (tabPos == std::string::npos) continue;
-
-                std::string		EntryName(fileLine.begin(), fileLine.begin() + tabPos);
-                std::string		EntryContent(fileLine.begin() + fileLine.find_first_not_of('\t', tabPos), fileLine.end());
-
-                for (char& c : EntryName)
-                {
-                    if (c > 0x7e)
-                    {
-                        std::wcerr << L"ERROR: the entry name " << Encoding::Utf8ToUtf16(EntryName) << "at line" << lineCount << "contains non-ASCII characters!" << "Only ASCII characters can be used for entry names.";
-                        continue;
-                    }
-                }
-                if (EntryName.length() >= 8)
-                {
-                    std::wcerr << L"ERROR: the entry name " << Encoding::Utf8ToUtf16(EntryName) << "at line" << lineCount << "is too long!" << "Entry names must be less than 8 characters.";
-                    continue;
-                }
-                // Push entry into table map
-                if (!entryMap.emplace(EntryName, EntryContent).second)
-                {
-                    if (logFile.is_open())
-                    {
-                        std::wstring wideFileName(fileName);
-                        logFile << "Entry " << EntryName << " duplicated in " << std::string(wideFileName.begin(), wideFileName.end()) << " file!\n";
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        std::wstring tmp(fileName);
-        throw std::runtime_error(std::string(tmp.begin(), tmp.end()) + " not found!");
-    }
 }
 
 void ApplyCharacterMap(tableMap_t& TablesMap, const CharMapArray& characterMap)

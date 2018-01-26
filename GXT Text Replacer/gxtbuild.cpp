@@ -785,6 +785,71 @@ void ReadTextFiles(tableMap_t& TableMap, std::map<uint32_t, VersionControlMap>& 
 
 }
 
+void ReadTextFiles(std::wstring const& textDirectory, std::map<std::string, std::string>& entryMap, std::ofstream& logFile)
+{
+    SetCurrentDirectoryW(textDirectory.c_str());
+
+    // Iterate through a directory
+    WIN32_FIND_DATA		findData;
+    HANDLE				hFoundFiles = FindFirstFile(L"*.txt", &findData);
+
+    if (hFoundFiles != INVALID_HANDLE_VALUE)
+    {
+        do
+            LoadFileContent(findData.cFileName, entryMap, logFile);
+        while (FindNextFile(hFoundFiles, &findData));
+
+        FindClose(hFoundFiles);
+    }
+    else
+        throw std::runtime_error("Error reading files in " + std::string(textDirectory.begin(), textDirectory.end()) + "! Aborting.");
+}
+
+void LoadFileContent(const wchar_t* fileName, std::map<std::string, std::string>& entryMap, std::ofstream& logFile)
+{
+    std::ifstream		InputFile(fileName, std::ifstream::in);
+
+    if (InputFile.is_open())
+    {
+        std::wcout << L"Reading entries from " << fileName << L"...\n";
+
+        if (!MakeSureFileIsValid(InputFile))
+        {
+            std::wcerr << L"ERROR: File " << fileName << " contains invalid UTF-8 characters!\n";
+            return;
+        }
+
+        std::string	fileLine;
+        while (std::getline(InputFile, fileLine))
+        {
+            if (!fileLine.empty() && fileLine[0] != '#')
+            {
+                // Extract entry name
+                std::string::size_type tabPos = fileLine.find_first_of('\t');
+                if (tabPos == std::string::npos) continue;
+
+                std::string		EntryName(fileLine.begin(), fileLine.begin() + tabPos);
+                std::string		EntryContent(fileLine.begin() + fileLine.find_first_not_of('\t', tabPos), fileLine.end());
+
+                // Push entry into table map
+                if (!entryMap.emplace(EntryName, EntryContent).second)
+                {
+                    if (logFile.is_open())
+                    {
+                        std::wstring wideFileName(fileName);
+                        logFile << "Entry " << EntryName << " duplicated in " << std::string(wideFileName.begin(), wideFileName.end()) << " file!\n";
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        std::wstring tmp(fileName);
+        throw std::runtime_error(std::string(tmp.begin(), tmp.end()) + " not found!");
+    }
+}
+
 void ApplyCharacterMap(tableMap_t& TablesMap, const CharMapArray& characterMap)
 {
     for (auto& it : TablesMap)

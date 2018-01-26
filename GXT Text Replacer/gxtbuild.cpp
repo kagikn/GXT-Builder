@@ -1,4 +1,5 @@
 #include "gxtbuild.h"
+#include "utf8.h"
 
 #include "DelimStringReader.h"
 #include "utility.h"

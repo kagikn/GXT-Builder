@@ -3,6 +3,7 @@
 #include <memory>
 #include <strsafe.h>
 #include <intrin.h>
+#include <unordered_map>
 
 class Directory
 {

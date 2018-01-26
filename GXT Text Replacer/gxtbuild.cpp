@@ -639,7 +639,7 @@ CharMapArray ParseCharacterMap(const std::wstring& szFileName)
     std::ifstream		CharMapFile(szFileName, std::ifstream::in);
     CharMapArray		characterMap;
 
-    if (CharMapFile.is_open() && MakeSureFileIsValid(CharMapFile))
+    if (CharMapFile.is_open() && Utf8Validator::MakeSureFileIsValid(CharMapFile))
     {
         CharMapArray::iterator charMapIterator = characterMap.begin();
         for (size_t i = 0; i < CHARACTER_MAP_HEIGHT; ++i)

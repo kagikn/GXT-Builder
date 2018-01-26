@@ -117,7 +117,7 @@ void EntryLoader::LoadFileContent(const wchar_t* fileName, std::unordered_map<st
     {
         std::wcout << L"Reading entries from " << fileName << L"...\n";
 
-        if (!Utf8Validator::MakeSureFileIsValid(InputFile))
+        if (!Utf8Validator::IsValid(InputFile))
         {
             std::wcerr << L"ERROR: File " << fileName << " contains invalid UTF-8 characters!\n";
             return;
@@ -170,7 +170,7 @@ void EntryLoader::LoadFileContent(const wchar_t* fileName, std::unordered_map<st
     }
 }
 
-bool Utf8Validator::MakeSureFileIsValid(std::ifstream& file)
+bool Utf8Validator::IsValid(std::ifstream& file)
 {
     std::istreambuf_iterator<char> it(file.rdbuf());
     std::istreambuf_iterator<char> eos;

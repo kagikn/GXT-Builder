@@ -27,5 +27,5 @@ public:
 class Utf8Validator
 {
 public:
-    static bool MakeSureFileIsValid(std::ifstream& file);
+    static bool IsValid(std::ifstream& file);
 };

@@ -724,6 +724,14 @@ void LoadFileContent(const wchar_t* fileName, std::unordered_map<std::string, st
                 std::string		EntryName(fileLine.begin(), fileLine.begin() + tabPos);
                 std::string		EntryContent(fileLine.begin() + fileLine.find_first_not_of('\t', tabPos), fileLine.end());
 
+                for (char& c : EntryName)
+                {
+                    if (c > 0x7e)
+                    {
+                        std::wcerr << L"ERROR: the entry name " << Utf8ToUtf16(EntryName) << "contains non-ASCII characters!" << "Only ASCII characters can be used for entry names.";
+                        continue;
+                    }
+                }
                 if (EntryName.length() >= 8)
                 {
                     std::wcerr << L"ERROR: the entry name " << Utf8ToUtf16(EntryName) << "is too long!" << "Entry names must be less than 8 characters.";

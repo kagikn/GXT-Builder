@@ -805,66 +805,6 @@ void ProduceStats(std::ofstream& LogFile, const std::wstring& szLangName, const 
     }
 }
 
-void ReadMasterTable(const std::wstring& szMasterLangName, std::map<uint32_t, VersionControlMap>& MasterMap)
-{
-    std::string							szNarrowLangName(szMasterLangName.begin(), szMasterLangName.end());
-    wchar_t								wcHashText[MAX_PATH];
-
-    swprintf_s(wcHashText, L"cache\\%X", crc32FromString(szNarrowLangName.c_str()));
-
-    std::ifstream	CacheFile(wcHashText, std::ifstream::binary);
-    if (CacheFile.is_open())
-    {
-        for (;; )
-        {
-            std::pair<uint32_t, VersionControlMap>	OneEntry;
-            OneEntry.second.bLinked = false;
-            CacheFile.read(reinterpret_cast<char*>(&OneEntry), sizeof(OneEntry));
-            if (CacheFile.eof())
-                break;
-            MasterMap.insert(OneEntry);
-        }
-    }
-}
-
-void ProduceMasterCache(const std::wstring& szMasterLangName, std::map<uint32_t, VersionControlMap>& MasterMap)
-{
-    std::string								szNarrowLangName(szMasterLangName.begin(), szMasterLangName.end());
-    wchar_t								wcHashText[MAX_PATH];
-
-    CreateDirectory(L"cache", nullptr);
-    swprintf_s(wcHashText, L"cache\\%X", crc32FromString(szNarrowLangName.c_str()));
-
-    std::ofstream	CacheFile(wcHashText, std::ofstream::binary);
-    if (CacheFile.is_open())
-    {
-        for (const auto& it : MasterMap)
-        {
-            if (it.second.bLinked)
-            {
-                CacheFile.write(reinterpret_cast<const char*>(&it), sizeof(it));
-            }
-        }
-    }
-}
-
-bool ValidateSlaveLangUpToDate(const std::wstring& szLangName)
-{
-    std::ifstream	ChangesFile(szLangName + L"_changes.txt");
-    if (ChangesFile.is_open())
-    {
-        std::string		FileLine;
-        while (std::getline(ChangesFile, FileLine))
-        {
-            if (!FileLine.empty() && FileLine[0] != '#')
-            {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
 const wchar_t* GetFormatName(eGXTVersion version)
 {
     switch (version)

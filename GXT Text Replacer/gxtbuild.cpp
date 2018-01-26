@@ -900,17 +900,6 @@ bool DirectoryExists(const std::wstring& dirName_in)
     return false;    // this is not a directory!
 }
 
-std::wstring MakeIniPath(const std::wstring& strFullIniPath)
-{
-    std::wstring result;
-    std::wstring::size_type	slashPos = strFullIniPath.find_last_of(L"/\\");
-    if (slashPos != std::wstring::npos)
-    {
-        result = strFullIniPath.substr(0, slashPos);
-    }
-    return result;
-}
-
 std::wstring GetFileNameNoExtension(std::wstring path)
 {
     std::wstring::size_type namePos = path.find_last_of(L"/\\");

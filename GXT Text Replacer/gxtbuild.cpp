@@ -621,7 +621,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTex
     for (const auto& missionTable : missionGXTTables)
     {
         const std::wstring missionTableName = Encoding::AnsiStringToWString(missionTable.second->_tableName);
-        if (Directory::Exists(textSourceDirectory + directorySeparatorChar + mainTableName))
+        if (Directory::Exists(textSourceDirectory + directorySeparatorChar + missionTableName))
         {
             for (auto & p : fs::directory_iterator(textDirectoryForMainTable))
             {

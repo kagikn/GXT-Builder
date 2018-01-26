@@ -11,6 +11,7 @@
 #include <sstream>
 #include <array>
 #include <vector>
+#include <unordered_map>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -600,7 +601,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTex
     constexpr auto directorySeparatorChar = L"\\";
 
     const std::wstring mainTableName = AnsiStringToWString(_mainTable._tableName);
-    std::map<std::string, std::string> entryMap;
+    std::unordered_map<std::string, std::string> entryMap;
     if (DirectoryExists(textSourceDirectory + directorySeparatorChar + mainTableName))
     {
         ReadTextFiles(textSourceDirectory, entryMap, logFile);
@@ -677,7 +678,7 @@ CharMapArray ParseCharacterMap(const std::wstring& szFileName)
     return characterMap;
 }
 
-void ReadTextFiles(std::wstring const& textDirectory, std::map<std::string, std::string>& entryMap, std::ofstream& logFile)
+void ReadTextFiles(std::wstring const& textDirectory, std::unordered_map<std::string, std::string>& entryMap, std::ofstream& logFile)
 {
     SetCurrentDirectoryW(textDirectory.c_str());
 
@@ -697,7 +698,7 @@ void ReadTextFiles(std::wstring const& textDirectory, std::map<std::string, std:
         throw std::runtime_error("Error reading files in " + std::string(textDirectory.begin(), textDirectory.end()) + "! Aborting.");
 }
 
-void LoadFileContent(const wchar_t* fileName, std::map<std::string, std::string>& entryMap, std::ofstream& logFile)
+void LoadFileContent(const wchar_t* fileName, std::unordered_map<std::string, std::string>& entryMap, std::ofstream& logFile)
 {
     std::ifstream		InputFile(fileName, std::ifstream::in);
 

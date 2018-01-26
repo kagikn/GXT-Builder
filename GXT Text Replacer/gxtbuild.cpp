@@ -595,12 +595,12 @@ static bool compTable(const EntryName& lhs, const EntryName& rhs)
     return strncmp(lhs.cName, rhs.cName, EntryName::GXT_TABLE_NAME_LEN) < 0;
 }
 
-void GXTTableCollection::ReplaceTextFromTableFolderes(std::wstring& directory, eTextConvertingMode textConvertingMode)
+void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTextConvertingMode textConvertingMode)
 {
     constexpr auto directorySeparatorChar = L"\\";
 
     const std::wstring mainTableName = AnsiStringToWString(_mainTable._tableName);
-    if (DirectoryExists(directory + directorySeparatorChar + mainTableName))
+    if (DirectoryExists(textSourceDirectory + directorySeparatorChar + mainTableName))
     {
 
     }
@@ -609,7 +609,7 @@ void GXTTableCollection::ReplaceTextFromTableFolderes(std::wstring& directory, e
     for (const auto& missionTable : missionGXTTables)
     {
         const std::wstring missionTableName = AnsiStringToWString(missionTable.second->_tableName);
-        if (DirectoryExists(directory + directorySeparatorChar + mainTableName))
+        if (DirectoryExists(textSourceDirectory + directorySeparatorChar + mainTableName))
         {
 
         }

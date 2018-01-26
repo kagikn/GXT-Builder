@@ -873,9 +873,6 @@ int wmain(int argc, wchar_t* argv[])
         }
 
         // A map of GXT tables
-        tableMap_t							TablesMap(compTable);
-        std::map<uint32_t, VersionControlMap>	MasterCacheMap;
-        std::forward_list<std::ofstream>		SlaveStreamsList;
         std::wstring							GXTName(argvStr[1]);
         std::wstring							TextDirectoryToReplace(argvStr[2]);
         std::ofstream							LogFile;

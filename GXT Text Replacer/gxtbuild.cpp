@@ -712,9 +712,12 @@ void LoadFileContent(const wchar_t* fileName, std::unordered_map<std::string, st
             return;
         }
 
+        uint64_t lineCount = 0;
         std::string	fileLine;
         while (std::getline(InputFile, fileLine))
         {
+            lineCount++;
+
             if (!fileLine.empty() && fileLine[0] != '#')
             {
                 // Extract entry name
@@ -728,13 +731,13 @@ void LoadFileContent(const wchar_t* fileName, std::unordered_map<std::string, st
                 {
                     if (c > 0x7e)
                     {
-                        std::wcerr << L"ERROR: the entry name " << Utf8ToUtf16(EntryName) << "contains non-ASCII characters!" << "Only ASCII characters can be used for entry names.";
+                        std::wcerr << L"ERROR: the entry name " << Utf8ToUtf16(EntryName) << "at line" << lineCount << "contains non-ASCII characters!" << "Only ASCII characters can be used for entry names.";
                         continue;
                     }
                 }
                 if (EntryName.length() >= 8)
                 {
-                    std::wcerr << L"ERROR: the entry name " << Utf8ToUtf16(EntryName) << "is too long!" << "Entry names must be less than 8 characters.";
+                    std::wcerr << L"ERROR: the entry name " << Utf8ToUtf16(EntryName) << "at line" << lineCount << "is too long!" << "Entry names must be less than 8 characters.";
                     continue;
                 }
                 // Push entry into table map

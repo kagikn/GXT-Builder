@@ -595,7 +595,7 @@ static bool compTable(const EntryName& lhs, const EntryName& rhs)
     return strncmp(lhs.cName, rhs.cName, EntryName::GXT_TABLE_NAME_LEN) < 0;
 }
 
-void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTextConvertingMode textConvertingMode)
+void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTextConvertingMode textConvertingMode, std::ofstream& logFile)
 {
     constexpr auto directorySeparatorChar = L"\\";
 

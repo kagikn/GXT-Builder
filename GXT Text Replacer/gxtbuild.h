@@ -15,6 +15,13 @@ enum eGXTVersion
     GXT_SA_MOBILE
 };
 
+enum eTextConvertingMode
+{
+    UseCharacterMap,
+    UseUtf8OrUtf16,
+    UseAnsi
+};
+
 class GXTTableBase
 {
 public:

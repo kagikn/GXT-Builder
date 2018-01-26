@@ -14,4 +14,5 @@ class Encoding
 {
 public:
     static std::wstring AnsiStringToWString(std::string const& src);
+    static std::wstring Utf8ToUtf16(const std::string& utf8);
 };

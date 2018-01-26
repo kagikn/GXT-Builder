@@ -1023,7 +1023,7 @@ int wmain(int argc, wchar_t* argv[])
 
     const std::vector<std::wstring> argvStr = MakeStringArgv(argv);
 
-    if (argc >= 2)
+    if (argc >= 3)
     {
         if (argvStr[1] == L"--help")
         {
@@ -1036,7 +1036,7 @@ int wmain(int argc, wchar_t* argv[])
         std::map<uint32_t, VersionControlMap>	MasterCacheMap;
         std::forward_list<std::ofstream>		SlaveStreamsList;
         std::wstring							GXTName(argvStr[1]);
-        //std::wstring							TextDirectoryToReplace(argvStr[2]);
+        std::wstring							TextDirectoryToReplace(argvStr[2]);
         std::ofstream							LogFile;
 
         // Parse commandline arguments
@@ -1067,7 +1067,9 @@ int wmain(int argc, wchar_t* argv[])
 
         try
         {
-            ReadGXTFile(GXTName, fileVersion);
+            auto gxt = ReadGXTFile(GXTName, fileVersion);
+            LogFile.open(GetFileNameNoExtension(GXTName) + L"_build.log");
+            gxt->BulkReplaceText(TextDirectoryToReplace, eTextConvertingMode::UseCharacterMap, LogFile);
         }
         catch (std::exception& e)
         {

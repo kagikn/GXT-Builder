@@ -595,6 +595,38 @@ static bool compTable(const EntryName& lhs, const EntryName& rhs)
     return strncmp(lhs.cName, rhs.cName, EntryName::GXT_TABLE_NAME_LEN) < 0;
 }
 
+void GXTTableCollection::ReplaceTextFromTableFolderes(std::wstring& directory, eTextConvertingMode textConvertingMode)
+{
+    constexpr auto directorySeparatorChar = L"\\";
+
+    const std::wstring mainTableName = AnsiStringToWString(_mainTable._tableName);
+    if (DirectoryExists(directory + directorySeparatorChar + mainTableName))
+    {
+
+    }
+
+    auto& missionGXTTables = GetMissionTableMap();
+    for (const auto& missionTable : missionGXTTables)
+    {
+        const std::wstring missionTableName = AnsiStringToWString(missionTable.second->_tableName);
+        if (DirectoryExists(directory + directorySeparatorChar + mainTableName))
+        {
+
+        }
+    }
+}
+
+std::wstring AnsiStringToWString(std::string const& src)
+{
+    int iBufferSize = MultiByteToWideChar(CP_ACP, 0, src.c_str(), -1, (wchar_t*)NULL, 0);
+
+    std::vector<wchar_t> dest(iBufferSize, L'\0');
+
+    MultiByteToWideChar(CP_ACP, 0, src.c_str(), -1, dest.data(), iBufferSize);
+
+    return std::wstring(dest.data(), dest.data() + iBufferSize - 1);
+}
+
 static bool MakeSureFileIsValid(std::ifstream& file)
 {
     std::istreambuf_iterator<char> it(file.rdbuf());

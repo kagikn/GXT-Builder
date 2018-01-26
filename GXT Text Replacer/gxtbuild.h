@@ -102,6 +102,12 @@ public:
     }
 
     void AddNewMissionTable(std::string& tableName, uint32_t absoluteTableOffset);
+    void ReplaceTextFromTableFolderes(std::wstring& directory, eTextConvertingMode textConvertingMode);
+
+    void HasAnyMissionTables()
+    {
+        _missionTable.size() > 0;
+    }
 
 private:
     eGXTVersion _fileVersion;

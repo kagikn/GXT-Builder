@@ -587,17 +587,6 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
     }
 }
 
-static bool compTable(const EntryName& lhs, const EntryName& rhs)
-{
-    if (strncmp(lhs.cName, "MAIN", EntryName::GXT_TABLE_NAME_LEN) == 0)
-        return true;
-
-    if (strncmp(rhs.cName, "MAIN", EntryName::GXT_TABLE_NAME_LEN) == 0)
-        return false;
-
-    return strncmp(lhs.cName, rhs.cName, EntryName::GXT_TABLE_NAME_LEN) < 0;
-}
-
 void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTextConvertingMode textConvertingMode, std::ofstream& logFile)
 {
     namespace fs = std::experimental::filesystem::v1;

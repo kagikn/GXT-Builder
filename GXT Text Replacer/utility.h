@@ -41,3 +41,16 @@ public:
     static bool IsValid(std::ifstream& file);
 };
 
+static const size_t CHARACTER_MAP_WIDTH = 16;
+static const size_t CHARACTER_MAP_HEIGHT = 14;
+static const size_t CHARACTER_MAP_SIZE = CHARACTER_MAP_WIDTH * CHARACTER_MAP_HEIGHT;
+
+typedef std::array<uint32_t, CHARACTER_MAP_SIZE> CharMapArray;
+
+class CharMap
+{
+public:
+    static void ApplyCharacterMap(tableMap_t& TablesMap, const CharMapArray& characterMap);
+    static CharMapArray ParseCharacterMap(const std::wstring& szFileName);
+};
+

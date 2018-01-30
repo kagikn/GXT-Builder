@@ -272,13 +272,7 @@ bool Utf8Validator::IsValid(std::ifstream& file)
     return true;
 }
 
-static const size_t CHARACTER_MAP_WIDTH = 16;
-static const size_t CHARACTER_MAP_HEIGHT = 14;
-static const size_t CHARACTER_MAP_SIZE = CHARACTER_MAP_WIDTH * CHARACTER_MAP_HEIGHT;
-
-typedef std::array<uint32_t, CHARACTER_MAP_SIZE> CharMapArray;
-
-CharMapArray ParseCharacterMap(const std::wstring& szFileName)
+CharMapArray CharMap::ParseCharacterMap(const std::wstring& szFileName)
 {
     std::ifstream		CharMapFile(szFileName, std::ifstream::in);
     CharMapArray		characterMap;
@@ -312,7 +306,7 @@ CharMapArray ParseCharacterMap(const std::wstring& szFileName)
     return characterMap;
 }
 
-void ApplyCharacterMap(tableMap_t& TablesMap, const CharMapArray& characterMap)
+void CharMap::ApplyCharacterMap(tableMap_t& TablesMap, const CharMapArray& characterMap)
 {
     for (auto& it : TablesMap)
     {

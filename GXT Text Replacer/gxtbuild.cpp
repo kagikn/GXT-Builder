@@ -534,7 +534,6 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         for (const auto& table : missionGXTTables)
         {
             std::array<char, 8> tableNameBuf;
-            auto& blockInfo = table.second;
 
             inputFile.seekg(dwCurrentOffset, std::ios_base::beg);
             inputFile.read(tableNameBuf.data(), 8);

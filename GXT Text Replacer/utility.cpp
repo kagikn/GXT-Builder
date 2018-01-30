@@ -101,7 +101,6 @@ void EntryLoader::LoadFileContent(const wchar_t* fileName, std::unordered_map<st
                 {
                     if (c > 0x7e)
                     {
-                        _setmode(_fileno(stdout), _O_WTEXT);
                         logFile << L"ERROR: the entry name " << EntryName << " at line " << lineCount << " contains non-ASCII characters! " << "Only ASCII characters can be used for entry names.";
                         continue;
                     }

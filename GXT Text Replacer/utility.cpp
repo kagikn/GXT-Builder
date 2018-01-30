@@ -78,7 +78,7 @@ std::unordered_map<uint32_t, std::string> EntryLoader::LoadHashEntryTextsInDirec
     {
         if (p.path().extension() == ".txt")
         {
-            EntryLoader::LoadFileContent(p.path().c_str(), entryMap, logFile);
+            EntryLoader::LoadFileContentForHashEntry(p.path().c_str(), entryMap, logFile);
         }
     }
 

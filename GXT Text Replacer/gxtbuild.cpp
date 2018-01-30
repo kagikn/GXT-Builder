@@ -594,7 +594,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTex
 
     const std::wstring mainTableName = Encoding::AnsiStringToWString(_mainTable._tableName);
     std::unordered_map<std::string, std::string> entryMap;
-    std::wstring textDirectoryForMainTable(textSourceDirectory + directorySeparatorChar + mainTableName);
+    const std::wstring textDirectoryForMainTable(textSourceDirectory + directorySeparatorChar + mainTableName);
     if (Directory::Exists(textDirectoryForMainTable))
     {
         for (auto & p : fs::directory_iterator(textDirectoryForMainTable))
@@ -610,9 +610,10 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTex
     for (const auto& missionTable : missionGXTTables)
     {
         const std::wstring missionTableName = Encoding::AnsiStringToWString(missionTable.second->_tableName);
-        if (Directory::Exists(textSourceDirectory + directorySeparatorChar + missionTableName))
+        const std::wstring textDirectoryForMissionTable(textSourceDirectory + directorySeparatorChar + missionTableName);
+        if (Directory::Exists(textDirectoryForMissionTable))
         {
-            for (auto & p : fs::directory_iterator(textDirectoryForMainTable))
+            for (auto & p : fs::directory_iterator(textDirectoryForMissionTable))
             {
                 if (p.path().extension() == ".txt")
                 {

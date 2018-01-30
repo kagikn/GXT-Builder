@@ -69,10 +69,10 @@ std::unordered_map<std::string, std::string> EntryLoader::LoadEntryTextsInDirect
     return entryMap;
 }
 
-std::unordered_map<std::string, std::string> EntryLoader::LoadHashEntryTextsInDirectory(const std::wstring& textDirectory, std::ofstream& logFile)
+std::unordered_map<uint32_t, std::string> EntryLoader::LoadHashEntryTextsInDirectory(const std::wstring& textDirectory, std::ofstream& logFile)
 {
     namespace fs = std::experimental::filesystem::v1;
-    std::unordered_map<std::string, std::string> entryMap;
+    std::unordered_map<uint32_t, std::string> entryMap;
 
     for (auto & p : fs::directory_iterator(textDirectory))
     {

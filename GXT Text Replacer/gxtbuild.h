@@ -2,6 +2,7 @@
 #define __GXTBUILD_H
 
 #include "enum.h"
+#include "crc32keygen.h"
 
 #include <string>
 #include <map>

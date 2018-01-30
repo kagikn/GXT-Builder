@@ -164,6 +164,8 @@
     <ClInclude Include="utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="crc32keygen.cpp" />
+    <ClCompile Include="Crc32keygen.h" />
     <ClCompile Include="gxtbuild.cpp" />
     <ClCompile Include="utility.cpp" />
   </ItemGroup>

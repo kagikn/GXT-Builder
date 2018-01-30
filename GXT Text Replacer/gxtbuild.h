@@ -94,9 +94,9 @@ public:
     void AddNewMissionTable(std::string& tableName, uint32_t absoluteTableOffset);
     void BulkReplaceText(std::wstring& textSourceDirectory, GXTEnum::eTextConvertingMode textConvertingMode, std::ofstream& logFile);
 
-    void HasAnyMissionTables()
+    bool HasAnyMissionTables()
     {
-        _missionTable.size() > 0;
+        return _missionTable.size() > 0;
     }
 
 private:

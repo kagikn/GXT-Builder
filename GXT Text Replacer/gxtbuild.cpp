@@ -617,7 +617,19 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
     }
 }
 
-
+template<typename mapType>
+void GXTTableCollection::ConvertTextInMap(std::unordered_map<mapType, std::string>& entryMap, GXTEnum::eTextConvertingMode textConvertingMode)
+{
+    switch (textConvertingMode)
+    {
+        case GXTEnum::eTextConvertingMode::UseCharacterMap:
+            return;
+        case GXTEnum::eTextConvertingMode::UseAnsi:
+            return;
+        default:
+            return;
+    }
+}
 
 void ProduceStats(std::ofstream& LogFile, const std::wstring& szLangName, const tableMap_t& TablesMap)
 {

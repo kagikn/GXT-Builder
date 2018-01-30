@@ -105,6 +105,9 @@ public:
 
 private:
     GXTEnum::eGXTVersion _fileVersion;
+
+    template<typename mapType>
+    void ConvertTextInMap(std::unordered_map<mapType, std::string>& entryMap, GXTEnum::eTextConvertingMode textConvertingMode);
 };
 
 struct EntryName

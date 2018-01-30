@@ -183,7 +183,7 @@ void EntryLoader::LoadFileContentForHashEntry(const wchar_t* fileName, std::unor
                         }
                         else
                         {
-                            logFile << L"ERROR: the entry name " << EntryName << " has invalid hex value!/n";
+                            logFile << L"ERROR: the entry name " << EntryName << " has invalid hex value!\n";
                             continue;
                         }
                     }
@@ -193,13 +193,13 @@ void EntryLoader::LoadFileContentForHashEntry(const wchar_t* fileName, std::unor
                 {
                     if (c > 0x7e)
                     {
-                        logFile << L"ERROR: the entry name " << EntryName << " at line " << lineCount << " contains non-ASCII characters! " << "Only ASCII characters can be used for entry names.";
+                        logFile << L"ERROR: the entry name " << EntryName << " at line " << lineCount << " contains non-ASCII characters! " << "Only ASCII characters can be used for entry names.\n";
                         continue;
                     }
                 }
                 if (EntryName.length() >= 8)
                 {
-                    logFile << L"ERROR: the entry name " << EntryName << " at line " << lineCount << " is too long! " << "Entry names must be less than 8 characters.";
+                    logFile << L"ERROR: the entry name " << EntryName << " at line " << lineCount << " is too long! " << "Entry names must be less than 8 characters.\n";
                     continue;
                 }
 

@@ -69,6 +69,22 @@ std::unordered_map<std::string, std::string> EntryLoader::LoadTextsInDirectory(c
     return entryMap;
 }
 
+std::unordered_map<std::string, std::string> EntryLoader::LoadHashEntryTextsInDirectory(const std::wstring& textDirectory, GXTEnum::eTextConvertingMode textConvertingMode, std::ofstream& logFile)
+{
+    namespace fs = std::experimental::filesystem::v1;
+    std::unordered_map<std::string, std::string> entryMap;
+
+    for (auto & p : fs::directory_iterator(textDirectory))
+    {
+        if (p.path().extension() == ".txt")
+        {
+            EntryLoader::LoadFileContent(p.path().c_str(), entryMap, logFile);
+        }
+    }
+
+    return entryMap;
+}
+
 void EntryLoader::LoadFileContent(const wchar_t* fileName, std::unordered_map<std::string, std::string>& entryMap, std::ofstream& logFile)
 {
     std::ifstream		InputFile(fileName, std::ifstream::in);

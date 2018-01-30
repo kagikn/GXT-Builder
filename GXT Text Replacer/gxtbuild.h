@@ -1,26 +1,13 @@
 #ifndef __GXTBUILD_H
 #define __GXTBUILD_H
 
+#include "enum.h"
+
 #include <string>
 #include <map>
 #include <memory>
 #include <strsafe.h>
 #include <intrin.h>
-
-enum eGXTVersion
-{
-    GXT_III,	// Unsupported
-    GXT_VC,
-    GXT_SA,
-    GXT_SA_MOBILE
-};
-
-enum eTextConvertingMode
-{
-    UseCharacterMap,
-    UseUtf8OrUtf16,
-    UseAnsi
-};
 
 class GXTTableBase
 {
@@ -49,7 +36,7 @@ public:
     virtual void	ReadEntireContent(std::ifstream& inputStream, const uint32_t offset, const size_t size) = 0;
     virtual void	PushFormattedChar(int character) = 0;
 
-    static std::unique_ptr<GXTTableBase> InstantiateGXTTable(eGXTVersion version);
+    static std::unique_ptr<GXTTableBase> InstantiateGXTTable(GXTEnum::eGXTVersion version);
 
 private:
 
@@ -63,13 +50,13 @@ public:
     std::string			_tableName;
     std::unique_ptr<GXTTableBase>				_GXTTable;
 
-    GXTTableBlockInfo(std::string tableName, eGXTVersion fileVersion)
+    GXTTableBlockInfo(std::string tableName, GXTEnum::eGXTVersion fileVersion)
     {
         _tableName = tableName;
         _GXTTable = std::move(GXTTableBase::InstantiateGXTTable(fileVersion));
     }
 
-    GXTTableBlockInfo(std::string tableName, uint32_t absoluteOffset, const eGXTVersion fileVersion)
+    GXTTableBlockInfo(std::string tableName, uint32_t absoluteOffset, const GXTEnum::eGXTVersion fileVersion)
     {
         _absoluteOffset = absoluteOffset;
         _tableName = tableName;
@@ -90,7 +77,7 @@ public:
     GXTTableBlockInfo _mainTable;
     std::map<std::string, std::unique_ptr<GXTTableBlockInfo>> _missionTable;
 
-    GXTTableCollection(std::string& tableName, uint32_t absoluteMainTableOffset, eGXTVersion fileVersion);
+    GXTTableCollection(std::string& tableName, uint32_t absoluteMainTableOffset, GXTEnum::eGXTVersion fileVersion);
 
     GXTTableBlockInfo& GetMainTable()
     {
@@ -102,8 +89,7 @@ public:
     }
 
     void AddNewMissionTable(std::string& tableName, uint32_t absoluteTableOffset);
-    void BulkReplaceText(std::wstring& textSourceDirectory, eTextConvertingMode textConvertingMode, std::ofstream& logFile);
-    std::unordered_map<std::string, std::string>& LoadTextsInDirectory(std::wstring & textDirectory, eTextConvertingMode textConvertingMode, std::ofstream & logFile) const;
+    void BulkReplaceText(std::wstring& textSourceDirectory, GXTEnum::eTextConvertingMode textConvertingMode, std::ofstream& logFile);
 
     void HasAnyMissionTables()
     {
@@ -111,7 +97,7 @@ public:
     }
 
 private:
-    eGXTVersion _fileVersion;
+    GXTEnum::eGXTVersion _fileVersion;
 };
 
 struct EntryName
@@ -138,7 +124,7 @@ typedef std::map<EntryName, std::unique_ptr<GXTTableBase>, bool(*)(const EntryNa
 class GXTFileBase
 {
 public:
-    static std::unique_ptr<GXTFileBase> InstantiateBuilder(eGXTVersion version);
+    static std::unique_ptr<GXTFileBase> InstantiateBuilder(GXTEnum::eGXTVersion version);
 
     void ProduceGXTFile(const std::wstring& szLangName, const tableMap_t& TablesMap);
 

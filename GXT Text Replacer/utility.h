@@ -1,3 +1,5 @@
+#include "gxtbuild.h"
+
 #include <string>
 #include <map>
 #include <memory>
@@ -21,7 +23,7 @@ public:
 class EntryLoader
 {
 public:
-    static void LoadTextsInDirectory(const std::wstring& textDirectory, eTextConvertingMode textConvertingMode, std::ofstream& logFile);
+    static std::unordered_map<std::string, std::string>& LoadTextsInDirectory(const std::wstring& textDirectory, GXTEnum::eTextConvertingMode textConvertingMode, std::ofstream& logFile);
     static void LoadFileContent(const wchar_t* fileName, std::unordered_map<std::string, std::string>& entryMap, std::ofstream& logFile);
 };
 

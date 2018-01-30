@@ -122,7 +122,7 @@ static const size_t CHARACTER_MAP_SIZE = CHARACTER_MAP_WIDTH * CHARACTER_MAP_HEI
 
 typedef std::array<uint32_t, CHARACTER_MAP_SIZE> CharMapArray;
 
-GXTTableCollection::GXTTableCollection(std::string& tableName, uint32_t absoluteMainTableOffset, eGXTVersion fileVersion)
+GXTTableCollection::GXTTableCollection(std::string& tableName, uint32_t absoluteMainTableOffset, GXTEnum::eGXTVersion fileVersion)
     :_mainTable(std::move(GXTTableBlockInfo(tableName, absoluteMainTableOffset, fileVersion))), _fileVersion(fileVersion)
 {
 }
@@ -222,18 +222,18 @@ namespace SA
     }
 };
 
-std::unique_ptr<GXTFileBase> GXTFileBase::InstantiateBuilder(eGXTVersion version)
+std::unique_ptr<GXTFileBase> GXTFileBase::InstantiateBuilder(GXTEnum::eGXTVersion version)
 {
     std::unique_ptr<GXTFileBase> ptr;
     switch (version)
     {
-    case GXT_VC:
+    case GXTEnum::eGXTVersion::GXT_VC:
         ptr = std::make_unique< VC::GXTFile >();
         break;
-    case GXT_SA:
+    case GXTEnum::eGXTVersion::GXT_SA:
         ptr = std::make_unique< SA::GXTFile<uint8_t> >();
         break;
-    case GXT_SA_MOBILE:
+    case GXTEnum::eGXTVersion::GXT_SA_MOBILE:
         ptr = std::make_unique< SA::GXTFile<uint16_t> >();
         break;
     default:
@@ -244,18 +244,18 @@ std::unique_ptr<GXTFileBase> GXTFileBase::InstantiateBuilder(eGXTVersion version
     return ptr;
 }
 
-std::unique_ptr<GXTTableBase> GXTTableBase::InstantiateGXTTable(eGXTVersion version)
+std::unique_ptr<GXTTableBase> GXTTableBase::InstantiateGXTTable(GXTEnum::eGXTVersion version)
 {
     std::unique_ptr<GXTTableBase> ptr;
     switch (version)
     {
-    case GXT_VC:
+    case GXTEnum::eGXTVersion::GXT_VC:
         ptr = std::make_unique< VC::GXTTable>();
         break;
-    case GXT_SA:
+    case GXTEnum::eGXTVersion::GXT_SA:
         ptr = std::make_unique< SA::GXTTable<uint8_t> >();
         break;
-    case GXT_SA_MOBILE:
+    case GXTEnum::eGXTVersion::GXT_SA_MOBILE:
         ptr = std::make_unique< SA::GXTTable<uint16_t> >();
         break;
     default:
@@ -442,7 +442,7 @@ void GXTFileBase::ProduceGXTFile(const std::wstring& szLangName, const tableMap_
     }
 }
 
-static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileName, const eGXTVersion fileVersion)
+static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileName, const GXTEnum::eGXTVersion fileVersion)
 {
     std::unique_ptr<GXTFileBase>	fileBuilder = GXTFileBase::InstantiateBuilder(fileVersion);
     std::ifstream	inputFile(fileName, std::ifstream::binary);
@@ -458,7 +458,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         std::array<char, BLOCK_SIZE_STORAGE_SIZE> sizeBuf;
 
 #pragma region "Header"
-        if (fileVersion == eGXTVersion::GXT_SA || fileVersion == eGXTVersion::GXT_SA_MOBILE)
+        if (fileVersion == GXTEnum::eGXTVersion::GXT_SA || fileVersion == GXTEnum::eGXTVersion::GXT_SA_MOBILE)
         {
             inputFile.read(headerBuf.data(), HEADER_SIZE);
 
@@ -586,7 +586,7 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
     }
 }
 
-void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTextConvertingMode textConvertingMode, std::ofstream& logFile)
+void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTEnum::eTextConvertingMode textConvertingMode, std::ofstream& logFile)
 {
     namespace fs = std::experimental::filesystem::v1;
     constexpr auto directorySeparatorChar = L"\\";
@@ -595,7 +595,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTex
     const std::wstring textDirectoryForMainTable(textSourceDirectory + directorySeparatorChar + mainTableName);
     if (Directory::Exists(textDirectoryForMainTable))
     {
-        auto entryMap = LoadTextsInDirectory(textDirectoryForMainTable, textConvertingMode, logFile);
+        auto entryMap = EntryLoader::LoadTextsInDirectory(textDirectoryForMainTable, textConvertingMode, logFile);
     }
 
     auto& missionGXTTables = GetMissionTableMap();
@@ -605,7 +605,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, eTex
         const std::wstring textDirectoryForMissionTable(textSourceDirectory + directorySeparatorChar + missionTableName);
         if (Directory::Exists(textDirectoryForMissionTable))
         {
-            auto entryMap = LoadTextsInDirectory(textDirectoryForMissionTable, textConvertingMode, logFile);
+            auto entryMap = EntryLoader::LoadTextsInDirectory(textDirectoryForMissionTable, textConvertingMode, logFile);
         }
     }
 }
@@ -705,15 +705,15 @@ void ProduceStats(std::ofstream& LogFile, const std::wstring& szLangName, const 
     }
 }
 
-const wchar_t* GetFormatName(eGXTVersion version)
+const wchar_t* GetFormatName(GXTEnum::eGXTVersion version)
 {
     switch (version)
     {
-    case GXT_VC:
+    case GXTEnum::eGXTVersion::GXT_VC:
         return L"GTA Vice City";
-    case GXT_SA:
+    case GXTEnum::eGXTVersion::GXT_SA:
         return L"GTA San Andreas";
-    case GXT_SA_MOBILE:
+    case GXTEnum::eGXTVersion::GXT_SA_MOBILE:
         return L"GTA San Andreas (Mobile version)";
     }
     return L"Unsupported";
@@ -778,7 +778,7 @@ int wmain(int argc, wchar_t* argv[])
         std::ofstream							LogFile;
 
         // Parse commandline arguments
-        eGXTVersion		fileVersion = GXT_SA;
+        GXTEnum::eGXTVersion		fileVersion = GXTEnum::eGXTVersion::GXT_SA;
 
         int	firstStream = 2;
         for (int i = 2; i < argc; ++i)
@@ -788,11 +788,11 @@ int wmain(int argc, wchar_t* argv[])
                 const std::wstring&	tmp = argvStr[i];
                 firstStream++;
                 if (tmp == L"-sa")
-                    fileVersion = GXT_SA;
+                    fileVersion = GXTEnum::eGXTVersion::GXT_SA;
                 else if (tmp == L"-vc")
-                    fileVersion = GXT_VC;
+                    fileVersion = GXTEnum::eGXTVersion::GXT_VC;
                 else if (tmp == L"-samobile")
-                    fileVersion = GXT_SA_MOBILE;
+                    fileVersion = GXTEnum::eGXTVersion::GXT_SA_MOBILE;
             }
             else
                 break;
@@ -807,7 +807,7 @@ int wmain(int argc, wchar_t* argv[])
         {
             auto gxt = ReadGXTFile(GXTName, fileVersion);
             LogFile.open(GetFileNameNoExtension(GXTName) + L"_build.log");
-            gxt->BulkReplaceText(TextDirectoryToReplace, eTextConvertingMode::UseCharacterMap, LogFile);
+            gxt->BulkReplaceText(TextDirectoryToReplace, GXTEnum::eTextConvertingMode::UseCharacterMap, LogFile);
         }
         catch (std::exception& e)
         {

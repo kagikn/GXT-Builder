@@ -306,30 +306,30 @@ CharMapArray CharMap::ParseCharacterMap(const std::wstring& szFileName)
     return characterMap;
 }
 
-void CharMap::ApplyCharacterMap(tableMap_t& TablesMap, const CharMapArray& characterMap)
+template<typename keyT>
+void CharMap::ApplyCharacterMap(std::unordered_map<keyT, std::string>& entryMap, const CharMapArray& characterMap)
 {
-    for (auto& it : TablesMap)
+    for (auto& pair : entryMap)
     {
-        for (utf8::iterator<std::string::iterator> strIt(it.second->Content.begin(), it.second->Content.begin(), it.second->Content.end());
-            strIt.base() != it.second->Content.end(); ++strIt)
+        for (utf8::iterator<std::string::iterator> strIt(pair.second.begin(), pair.second.begin(), pair.second.end());
+            strIt.base() != pair.second.end(); ++strIt)
         {
-            bool	bFound = false;
+            bool	found = false;
             if (*strIt == '\0')
             {
-                it.second->PushFormattedChar('\0');
                 continue;
             }
             for (size_t i = 0; i < CHARACTER_MAP_SIZE; ++i)
             {
                 if (*strIt == characterMap[i])
                 {
-                    it.second->PushFormattedChar(static_cast<int>(i) + 32);
+                    *strIt = (characterMap[i] + 32);
                     bFound = true;
                     break;
                 }
             }
 
-            if (!bFound)
+            if (!found)
             {
                 std::ostringstream tmpstream;
                 tmpstream << "Can't locate character \"" << static_cast<wchar_t>(*strIt) << "\" (" << *strIt << ") in a character map!";

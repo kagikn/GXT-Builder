@@ -584,6 +584,12 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
     namespace fs = std::experimental::filesystem::v1;
     constexpr auto directorySeparatorChar = L"\\";
 
+    std::optional<CharMapArray> charMap;
+    if (textConvertingMode == GXTEnum::eTextConvertingMode::UseCharacterMap)
+    {
+        charMap = CharMap::ParseCharacterMap(L"charmap.txt");
+    }
+
     const std::wstring mainTableName = Encoding::AnsiStringToWString(_mainTable._tableName);
     const std::wstring textDirectoryForMainTable(textSourceDirectory + directorySeparatorChar + mainTableName);
 
@@ -592,10 +598,28 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
         if (UsesHashForEntryName())
         {
             auto entryMap = EntryLoader::LoadHashEntryTextsInDirectory(textDirectoryForMainTable, logFile);
+
+            switch (textConvertingMode)
+            {
+                case GXTEnum::eTextConvertingMode::UseCharacterMap:
+                    break;
+                case GXTEnum::eTextConvertingMode::UseAnsi:
+                    break;
+                default:
+            }
         }
         else
         {
             auto entryMap = EntryLoader::LoadEntryTextsInDirectory(textDirectoryForMainTable, logFile);
+
+            switch (textConvertingMode)
+            {
+            case GXTEnum::eTextConvertingMode::UseCharacterMap:
+                break;
+            case GXTEnum::eTextConvertingMode::UseAnsi:
+                break;
+            default:
+            }
         }
     }
 
@@ -609,10 +633,28 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
             if (UsesHashForEntryName())
             {
                 auto entryMap = EntryLoader::LoadHashEntryTextsInDirectory(textDirectoryForMainTable, logFile);
+
+                switch (textConvertingMode)
+                {
+                case GXTEnum::eTextConvertingMode::UseCharacterMap:
+                    break;
+                case GXTEnum::eTextConvertingMode::UseAnsi:
+                    break;
+                default:
+                }
             }
             else
             {
                 auto entryMap = EntryLoader::LoadEntryTextsInDirectory(textDirectoryForMainTable, logFile);
+
+                switch (textConvertingMode)
+                {
+                case GXTEnum::eTextConvertingMode::UseCharacterMap:
+                    break;
+                case GXTEnum::eTextConvertingMode::UseAnsi:
+                    break;
+                default:
+                }
             }
         }
     }

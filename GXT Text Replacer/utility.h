@@ -50,7 +50,8 @@ typedef std::array<uint32_t, CHARACTER_MAP_SIZE> CharMapArray;
 class CharMap
 {
 public:
-    static void ApplyCharacterMap(tableMap_t& TablesMap, const CharMapArray& characterMap);
+    template<typename keyT>
+    static void ApplyCharacterMap(std::unordered_map<keyT, std::string>& entryMap, const CharMapArray& characterMap);
     static CharMapArray ParseCharacterMap(const std::wstring& szFileName);
 };
 

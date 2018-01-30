@@ -55,17 +55,17 @@ std::wstring Encoding::Utf8ToUtf16(const std::string& utf8)
 std::unordered_map<std::string, std::string> EntryLoader::LoadTextsInDirectory(const std::wstring& textDirectory, GXTEnum::eTextConvertingMode textConvertingMode, std::ofstream& logFile)
 {
     namespace fs = std::experimental::filesystem::v1;
+    std::unordered_map<std::string, std::string> entryMap;
 
     for (auto & p : fs::directory_iterator(textDirectory))
     {
         if (p.path().extension() == ".txt")
-        {
-            std::unordered_map<std::string, std::string> entryMap;
+        {            
             EntryLoader::LoadFileContent(p.path().c_str(), entryMap, logFile);
-
-            return entryMap;
         }
     }
+
+    return entryMap;
 }
 
 void EntryLoader::LoadFileContent(const wchar_t* fileName, std::unordered_map<std::string, std::string>& entryMap, std::ofstream& logFile)

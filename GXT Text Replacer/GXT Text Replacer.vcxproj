@@ -157,6 +157,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="crc32keygen.h" />
     <ClInclude Include="DelimStringReader.h" />
     <ClInclude Include="enum.h" />
     <ClInclude Include="gxtbuild.h" />
@@ -166,7 +167,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="crc32keygen.cpp" />
-    <ClCompile Include="Crc32keygen.h" />
     <ClCompile Include="gxtbuild.cpp" />
     <ClCompile Include="utility.cpp" />
   </ItemGroup>

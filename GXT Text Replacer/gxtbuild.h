@@ -103,6 +103,7 @@ public:
 
     void AddNewMissionTable(std::string& tableName, uint32_t absoluteTableOffset);
     void BulkReplaceText(std::wstring& textSourceDirectory, eTextConvertingMode textConvertingMode, std::ofstream& logFile);
+    std::unordered_map<std::string, std::string>& LoadTextsInDirectory(std::wstring & textDirectory, eTextConvertingMode textConvertingMode, std::ofstream & logFile) const;
 
     void HasAnyMissionTables()
     {

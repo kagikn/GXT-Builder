@@ -10,6 +10,7 @@
 #include <array>
 #include <vector>
 #include <unordered_map>
+#include <filesystem>
 
 #include <windows.h>
 #include <io.h>
@@ -49,6 +50,22 @@ std::wstring Encoding::Utf8ToUtf16(const std::string& utf8)
     MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, dest.data(), iBufferSize);
 
     return std::wstring(dest.data(), dest.data() + iBufferSize - 1);
+}
+
+std::unordered_map<std::string, std::string>& EntryLoader::LoadTextsInDirectory(const std::wstring& textDirectory, eTextConvertingMode textConvertingMode, std::ofstream & logFile)
+{
+    namespace fs = std::experimental::filesystem::v1;
+
+    for (auto & p : fs::directory_iterator(textDirectory))
+    {
+        if (p.path().extension() == ".txt")
+        {
+            std::unordered_map<std::string, std::string> entryMap;
+            EntryLoader::LoadFileContent(p.path().c_str(), entryMap, logFile);
+
+            return entryMap;
+        }
+    }
 }
 
 void EntryLoader::LoadFileContent(const wchar_t* fileName, std::unordered_map<std::string, std::string>& entryMap, std::ofstream& logFile)

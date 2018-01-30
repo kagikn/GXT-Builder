@@ -306,8 +306,7 @@ CharMapArray CharMap::ParseCharacterMap(const std::wstring& szFileName)
     return characterMap;
 }
 
-template<typename keyT>
-void CharMap::ApplyCharacterMap(std::unordered_map<keyT, std::string>& entryMap, const CharMapArray& characterMap)
+void CharMap::ApplyCharacterMap(std::unordered_map<std::any, std::string>& entryMap, const CharMapArray& characterMap)
 {
     for (auto& pair : entryMap)
     {

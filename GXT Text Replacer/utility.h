@@ -9,6 +9,7 @@
 #include <intrin.h>
 #include <unordered_map>
 #include <optional>
+#include <any>
 
 class Directory
 {
@@ -50,8 +51,7 @@ typedef std::array<uint32_t, CHARACTER_MAP_SIZE> CharMapArray;
 class CharMap
 {
 public:
-    template<typename keyT>
-    static void ApplyCharacterMap(std::unordered_map<keyT, std::string>& entryMap, const CharMapArray& characterMap);
+    static void ApplyCharacterMap(std::unordered_map<std::any, std::string>& entryMap, const CharMapArray& characterMap);
     static CharMapArray ParseCharacterMap(const std::wstring& szFileName);
 };
 

@@ -588,7 +588,14 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
     const std::wstring textDirectoryForMainTable(textSourceDirectory + directorySeparatorChar + mainTableName);
     if (Directory::Exists(textDirectoryForMainTable))
     {
-        auto entryMap = EntryLoader::LoadTextsInDirectory(textDirectoryForMainTable, textConvertingMode, logFile);
+        if (UsesHashForEntryName())
+        {
+            auto entryMap = EntryLoader::LoadHashEntryTextsInDirectory(textDirectoryForMainTable, textConvertingMode, logFile);
+        }
+        else
+        {
+            auto entryMap = EntryLoader::LoadEntryTextsInDirectory(textDirectoryForMainTable, textConvertingMode, logFile);
+        }
     }
 
     auto& missionGXTTables = GetMissionTableMap();
@@ -598,7 +605,14 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
         const std::wstring textDirectoryForMissionTable(textSourceDirectory + directorySeparatorChar + missionTableName);
         if (Directory::Exists(textDirectoryForMissionTable))
         {
-            auto entryMap = EntryLoader::LoadTextsInDirectory(textDirectoryForMissionTable, textConvertingMode, logFile);
+            if (UsesHashForEntryName())
+            {
+                auto entryMap = EntryLoader::LoadHashEntryTextsInDirectory(textDirectoryForMainTable, textConvertingMode, logFile);
+            }
+            else
+            {
+                auto entryMap = EntryLoader::LoadEntryTextsInDirectory(textDirectoryForMainTable, textConvertingMode, logFile);
+            }
         }
     }
 }

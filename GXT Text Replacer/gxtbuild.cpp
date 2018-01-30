@@ -591,11 +591,11 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
     {
         if (UsesHashForEntryName())
         {
-            auto entryMap = EntryLoader::LoadHashEntryTextsInDirectory(textDirectoryForMainTable, textConvertingMode, logFile);
+            auto entryMap = EntryLoader::LoadHashEntryTextsInDirectory(textDirectoryForMainTable, logFile);
         }
         else
         {
-            auto entryMap = EntryLoader::LoadEntryTextsInDirectory(textDirectoryForMainTable, textConvertingMode, logFile);
+            auto entryMap = EntryLoader::LoadEntryTextsInDirectory(textDirectoryForMainTable, logFile);
         }
     }
 
@@ -608,11 +608,11 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
         {
             if (UsesHashForEntryName())
             {
-                auto entryMap = EntryLoader::LoadHashEntryTextsInDirectory(textDirectoryForMainTable, textConvertingMode, logFile);
+                auto entryMap = EntryLoader::LoadHashEntryTextsInDirectory(textDirectoryForMainTable, logFile);
             }
             else
             {
-                auto entryMap = EntryLoader::LoadEntryTextsInDirectory(textDirectoryForMainTable, textConvertingMode, logFile);
+                auto entryMap = EntryLoader::LoadEntryTextsInDirectory(textDirectoryForMainTable, logFile);
             }
         }
     }

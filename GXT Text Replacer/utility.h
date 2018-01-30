@@ -32,3 +32,4 @@ class Utf8Validator
 public:
     static bool IsValid(std::ifstream& file);
 };
+

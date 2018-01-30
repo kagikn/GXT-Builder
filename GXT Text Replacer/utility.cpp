@@ -145,3 +145,77 @@ bool Utf8Validator::IsValid(std::ifstream& file)
     return true;
 }
 
+static const size_t CHARACTER_MAP_WIDTH = 16;
+static const size_t CHARACTER_MAP_HEIGHT = 14;
+static const size_t CHARACTER_MAP_SIZE = CHARACTER_MAP_WIDTH * CHARACTER_MAP_HEIGHT;
+
+typedef std::array<uint32_t, CHARACTER_MAP_SIZE> CharMapArray;
+
+CharMapArray ParseCharacterMap(const std::wstring& szFileName)
+{
+    std::ifstream		CharMapFile(szFileName, std::ifstream::in);
+    CharMapArray		characterMap;
+
+    if (CharMapFile.is_open() && Utf8Validator::IsValid(CharMapFile))
+    {
+        CharMapArray::iterator charMapIterator = characterMap.begin();
+        for (size_t i = 0; i < CHARACTER_MAP_HEIGHT; ++i)
+        {
+            std::string FileLine;
+            std::getline(CharMapFile, FileLine);
+
+            utf8::iterator<std::string::iterator> utf8It(FileLine.begin(), FileLine.begin(), FileLine.end());
+            for (size_t j = 0; j < CHARACTER_MAP_WIDTH; ++j)
+            {
+                while (utf8It.base() != FileLine.end() && *utf8It == '\t')
+                {
+                    ++utf8It;
+                }
+
+                if (utf8It.base() == FileLine.end())
+                    throw std::runtime_error("Cannot parse character map file " + std::string(szFileName.begin(), szFileName.end()) + "!");
+
+                *charMapIterator++ = *utf8It++;
+            }
+        }
+    }
+    else
+        throw std::runtime_error("Cannot parse character map file " + std::string(szFileName.begin(), szFileName.end()) + "!");
+
+    return characterMap;
+}
+
+void ApplyCharacterMap(tableMap_t& TablesMap, const CharMapArray& characterMap)
+{
+    for (auto& it : TablesMap)
+    {
+        for (utf8::iterator<std::string::iterator> strIt(it.second->Content.begin(), it.second->Content.begin(), it.second->Content.end());
+            strIt.base() != it.second->Content.end(); ++strIt)
+        {
+            bool	bFound = false;
+            if (*strIt == '\0')
+            {
+                it.second->PushFormattedChar('\0');
+                continue;
+            }
+            for (size_t i = 0; i < CHARACTER_MAP_SIZE; ++i)
+            {
+                if (*strIt == characterMap[i])
+                {
+                    it.second->PushFormattedChar(static_cast<int>(i) + 32);
+                    bFound = true;
+                    break;
+                }
+            }
+
+            if (!bFound)
+            {
+                std::ostringstream tmpstream;
+                tmpstream << "Can't locate character \"" << static_cast<wchar_t>(*strIt) << "\" (" << *strIt << ") in a character map!";
+                throw std::runtime_error(tmpstream.str());
+            }
+        }
+
+    }
+}
+

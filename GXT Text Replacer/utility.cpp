@@ -53,7 +53,7 @@ std::wstring Encoding::Utf8ToUtf16(const std::string& utf8)
     return std::wstring(dest.data(), dest.data() + iBufferSize - 1);
 }
 
-std::unordered_map<std::string, std::string> EntryLoader::LoadEntryTextsInDirectory(const std::wstring& textDirectory, GXTEnum::eTextConvertingMode textConvertingMode, std::ofstream& logFile)
+std::unordered_map<std::string, std::string> EntryLoader::LoadEntryTextsInDirectory(const std::wstring& textDirectory, std::ofstream& logFile)
 {
     namespace fs = std::experimental::filesystem::v1;
     std::unordered_map<std::string, std::string> entryMap;
@@ -69,7 +69,7 @@ std::unordered_map<std::string, std::string> EntryLoader::LoadEntryTextsInDirect
     return entryMap;
 }
 
-std::unordered_map<std::string, std::string> EntryLoader::LoadHashEntryTextsInDirectory(const std::wstring& textDirectory, GXTEnum::eTextConvertingMode textConvertingMode, std::ofstream& logFile)
+std::unordered_map<std::string, std::string> EntryLoader::LoadHashEntryTextsInDirectory(const std::wstring& textDirectory, std::ofstream& logFile)
 {
     namespace fs = std::experimental::filesystem::v1;
     std::unordered_map<std::string, std::string> entryMap;

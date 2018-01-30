@@ -586,6 +586,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
 
     const std::wstring mainTableName = Encoding::AnsiStringToWString(_mainTable._tableName);
     const std::wstring textDirectoryForMainTable(textSourceDirectory + directorySeparatorChar + mainTableName);
+
     if (Directory::Exists(textDirectoryForMainTable))
     {
         if (UsesHashForEntryName())

@@ -98,6 +98,10 @@ public:
     {
         return _missionTable.size() > 0;
     }
+    bool UsesHashForEntryName()
+    {
+        return (_fileVersion != GXTEnum::eGXTVersion::GXT_VC);
+    }
 
 private:
     GXTEnum::eGXTVersion _fileVersion;

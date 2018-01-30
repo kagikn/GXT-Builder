@@ -159,7 +159,7 @@ void EntryLoader::LoadFileContentForHashEntry(const wchar_t* fileName, std::unor
                 std::string		EntryName(fileLine.begin(), fileLine.begin() + tabPos);
                 std::string		EntryContent(fileLine.begin() + fileLine.find_first_not_of('\t', tabPos), fileLine.end());
 
-                if (EntryName.size >= 3)
+                if (EntryName.size() >= 3)
                 {
                     std::string twoStr = EntryName.substr(0, 2);
 

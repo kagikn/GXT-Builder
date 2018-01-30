@@ -170,7 +170,7 @@ void EntryLoader::LoadFileContentForHashEntry(const wchar_t* fileName, std::unor
                         auto hexValue = HexStringToUInt32(hexStr);
                         if (hexValue != std::nullopt)
                         {
-                            if (!entryMap.emplace(hexValue, EntryContent).second)
+                            if (!entryMap.emplace(hexValue.value(), EntryContent).second)
                             {
                                 if (logFile.is_open())
                                 {

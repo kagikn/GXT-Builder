@@ -617,8 +617,6 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
     }
 }
 
-
-
 void ProduceStats(std::ofstream& LogFile, const std::wstring& szLangName, const tableMap_t& TablesMap)
 {
     if (LogFile.is_open())

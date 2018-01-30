@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef __GXTBUILD_H
 #define __GXTBUILD_H
 

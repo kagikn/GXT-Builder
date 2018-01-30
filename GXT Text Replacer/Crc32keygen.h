@@ -1,3 +1,5 @@
+#pragma once
+
 #include <array>
 
 class Crc32KeyGen

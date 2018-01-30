@@ -1,3 +1,4 @@
+#include "Crc32keygen.h"
 #include "utility.h"
 #include "utf8.h"
 
@@ -158,6 +159,36 @@ void EntryLoader::LoadFileContentForHashEntry(const wchar_t* fileName, std::unor
                 std::string		EntryName(fileLine.begin(), fileLine.begin() + tabPos);
                 std::string		EntryContent(fileLine.begin() + fileLine.find_first_not_of('\t', tabPos), fileLine.end());
 
+                if (EntryName.size >= 3)
+                {
+                    std::string twoStr = EntryName.substr(0, 2);
+
+                    if (twoStr == "0x" || twoStr == "0X")
+                    {
+                        std::string hexStr = EntryName.substr(2);
+
+                        auto hexValue = HexStringToUInt32(hexStr);
+                        if (hexValue != std::nullopt)
+                        {
+                            if (!entryMap.emplace(hexValue, EntryContent).second)
+                            {
+                                if (logFile.is_open())
+                                {
+                                    std::wstring wideFileName(fileName);
+                                    logFile << "Entry " << EntryName << " duplicated in " << std::string(wideFileName.begin(), wideFileName.end()) << " file!\n";
+                                }
+                            }
+
+                            continue;
+                        }
+                        else
+                        {
+                            logFile << L"ERROR: the entry name " << EntryName << " has invalid hex value!/n";
+                            continue;
+                        }
+                    }
+                }
+
                 for (char& c : EntryName)
                 {
                     if (c > 0x7e)
@@ -171,8 +202,11 @@ void EntryLoader::LoadFileContentForHashEntry(const wchar_t* fileName, std::unor
                     logFile << L"ERROR: the entry name " << EntryName << " at line " << lineCount << " is too long! " << "Entry names must be less than 8 characters.";
                     continue;
                 }
+
+                uint32_t entryHash = Crc32KeyGen::GetUppercaseKey(EntryName.c_str());
+
                 // Push entry into table map
-                if (!entryMap.emplace(EntryName, EntryContent).second)
+                if (!entryMap.emplace(entryHash, EntryContent).second)
                 {
                     if (logFile.is_open())
                     {
@@ -187,6 +221,23 @@ void EntryLoader::LoadFileContentForHashEntry(const wchar_t* fileName, std::unor
     {
         std::wstring tmp(fileName);
         throw std::runtime_error(std::string(tmp.begin(), tmp.end()) + " not found!");
+    }
+}
+
+std::optional<uint32_t> EntryLoader::HexStringToUInt32(const std::string& hexString)
+{
+    if (hexString.find_first_not_of("0123456789abcdefABCDEF") == std::string::npos)
+    {
+        uint32_t hex;
+        std::stringstream ss;
+        ss << std::hex << hexString;
+        ss >> hex;
+
+        return hex;
+    }
+    else
+    {
+        return std::nullopt;
     }
 }
 

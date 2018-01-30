@@ -26,7 +26,7 @@ public:
 class EntryLoader
 {
 public:
-    static std::unordered_map<std::string, std::string> LoadTextsInDirectory(const std::wstring& textDirectory, GXTEnum::eTextConvertingMode textConvertingMode, std::ofstream& logFile);
+    static std::unordered_map<std::string, std::string> LoadEntryTextsInDirectory(const std::wstring& textDirectory, GXTEnum::eTextConvertingMode textConvertingMode, std::ofstream& logFile);
     static std::unordered_map<std::string, std::string> LoadHashEntryTextsInDirectory(const std::wstring& textDirectory, GXTEnum::eTextConvertingMode textConvertingMode, std::ofstream& logFile);
     static void LoadFileContent(const wchar_t* fileName, std::unordered_map<std::string, std::string>& entryMap, std::ofstream& logFile);
     static void LoadFileContentForHashEntry(const wchar_t* fileName, std::unordered_map<uint32_t, std::string>& entryMap, std::ofstream& logFile);

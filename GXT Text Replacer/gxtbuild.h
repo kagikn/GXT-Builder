@@ -110,48 +110,6 @@ private:
     GXTEnum::eGXTVersion _fileVersion;
 };
 
-struct EntryName
-{
-    static const size_t		GXT_TABLE_NAME_LEN = 8;
-
-    char						cName[GXT_TABLE_NAME_LEN];
-
-    EntryName(const char* pName)
-    {
-        StringCchCopyNExA(cName, _countof(cName), pName, GXT_TABLE_NAME_LEN, nullptr, nullptr, STRSAFE_FILL_BEHIND_NULL);
-    }
-
-    EntryName(const wchar_t* pName)
-    {
-        size_t numConverted = 0;
-        wcstombs_s(&numConverted, cName, pName, _countof(cName));
-        std::fill(std::begin(cName) + numConverted, std::end(cName), 0);
-    }
-};
-
-typedef std::map<EntryName, std::unique_ptr<GXTTableBase>, bool(*)(const EntryName&, const EntryName&)>	tableMap_t;
-
-class GXTFileBase
-{
-public:
-    static std::unique_ptr<GXTFileBase> InstantiateBuilder(GXTEnum::eGXTVersion version);
-
-    void ProduceGXTFile(const std::wstring& szLangName, const tableMap_t& TablesMap);
-
-private:
-    virtual uint32_t WriteOutHeader(std::ostream& stream) const = 0;
-};
-
-struct VersionControlMap
-{
-    uint32_t					TextHash;
-    bool						bLinked;
-
-    VersionControlMap(uint32_t hash = 0)
-        : TextHash(hash), bLinked(true)
-    {}
-};
-
 namespace VC
 {
     class GXTTable : public GXTTableBase
@@ -206,16 +164,6 @@ namespace VC
         std::map<std::string, uint32_t>	Entries;
         std::basic_string<character_t>	FormattedContent;
     };
-
-    class GXTFile : public GXTFileBase
-    {
-    private:
-        virtual uint32_t WriteOutHeader(std::ostream&) const override
-        {
-            // No header
-            return 0;
-        }
-    };
 };
 
 namespace SA
@@ -267,19 +215,6 @@ namespace SA
     private:
         std::map<uint32_t, uint32_t>	Entries;
         std::basic_string<character_t>	FormattedContent;
-    };
-
-    class GXTFile : public GXTFileBase
-    {
-
-
-    private:
-        virtual uint32_t WriteOutHeader(std::ostream& stream) const override
-        {
-            const char		header[] = { 0x04, 0x00, 0x08, 0x00 };	// 0x080004
-            stream.write(header, sizeof(header));
-            return sizeof(header);
-        }
     };
 };
 

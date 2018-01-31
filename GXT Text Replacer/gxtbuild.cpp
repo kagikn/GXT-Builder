@@ -220,25 +220,6 @@ namespace SA
     }
 };
 
-std::unique_ptr<GXTFileBase> GXTFileBase::InstantiateBuilder(GXTEnum::eGXTVersion version)
-{
-    std::unique_ptr<GXTFileBase> ptr;
-    switch (version)
-    {
-    case GXTEnum::eGXTVersion::GXT_VC:
-        ptr = std::make_unique<VC::GXTFile>();
-        break;
-    case GXTEnum::eGXTVersion::GXT_SA:
-        ptr = std::make_unique<SA::GXTFile>();
-        break;
-    default:
-        throw std::runtime_error(std::string("Trying to instantiate an unsupported GXT builder version " + version) + "!");
-        break;
-
-    }
-    return ptr;
-}
-
 std::unique_ptr<GXTTableBase> GXTTableBase::InstantiateGXTTable(GXTEnum::eGXTVersion version)
 {
     std::unique_ptr<GXTTableBase> ptr;
@@ -354,89 +335,8 @@ size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint
     return totalSize;
 }
 
-// NOTE: Some GXT editors seem to use a different structure (offset differences), but this structure
-// matches original San Andreas GXT structure more!
-void GXTFileBase::ProduceGXTFile(const std::wstring& szLangName, const tableMap_t& TablesMap)
-{
-    std::ofstream	OutputFile(szLangName + L".gxt", std::ofstream::binary);
-    if (OutputFile.is_open())
-    {
-        uint32_t		dwCurrentOffset = 0;
-
-        // Header
-        {
-            const uint32_t headerSize = WriteOutHeader(OutputFile);
-            dwCurrentOffset += headerSize;
-        }
-
-        // Write TABL section
-        {
-            const char		header[] = { 'T', 'A', 'B', 'L' };
-            OutputFile.write(header, sizeof(header));
-
-            const uint32_t	dwBlockSize = static_cast<uint32_t>(TablesMap.size() * 12);
-            OutputFile.write(reinterpret_cast<const char*>(&dwBlockSize), sizeof(dwBlockSize));
-
-            dwCurrentOffset += sizeof(header) + sizeof(dwBlockSize) + dwBlockSize;
-
-            bool			bItsNotMain = false;
-            for (auto& it : TablesMap)
-            {
-                OutputFile.write(it.first.cName, sizeof(it.first.cName));
-                OutputFile.write(reinterpret_cast<const char*>(&dwCurrentOffset), sizeof(dwCurrentOffset));
-                dwCurrentOffset += static_cast<uint32_t>(16 + (bItsNotMain * 8) + (it.second->GetNumEntries() * it.second->GetEntrySize()) + it.second->GetFormattedContentSize());
-
-                // Align to 4 bytes
-                dwCurrentOffset = (dwCurrentOffset + 4 - 1) & ~(4 - 1);
-
-                bItsNotMain = true;
-            }
-        }
-
-        // Write TKEY and TDAT sections
-        bool			bItsNotMain = false;
-        for (const auto& it : TablesMap)
-        {
-            if (bItsNotMain)
-                OutputFile.write(it.first.cName, sizeof(it.first.cName));
-            else
-                bItsNotMain = true;
-
-            {
-                const char		header[] = { 'T', 'K', 'E', 'Y' };
-                OutputFile.write(header, sizeof(header));
-                const uint32_t	dwBlockSize = static_cast<uint32_t>(it.second->GetNumEntries() * it.second->GetEntrySize());
-                OutputFile.write(reinterpret_cast<const char*>(&dwBlockSize), sizeof(dwBlockSize));
-
-                // Write TKEY entries
-                it.second->WriteOutEntries(OutputFile);
-            }
-
-            {
-                const char		header[] = { 'T', 'D', 'A', 'T' };
-                OutputFile.write(header, sizeof(header));
-                const uint32_t	dwBlockSize = static_cast<uint32_t>(it.second->GetFormattedContentSize());
-                OutputFile.write(reinterpret_cast<const char*>(&dwBlockSize), sizeof(dwBlockSize));
-
-                it.second->WriteOutContent(OutputFile);
-            }
-
-            // Align to 4 bytes
-            if (OutputFile.tellp() % 4)
-                OutputFile.seekp(4 - (OutputFile.tellp() % 4), std::ios_base::cur);
-        }
-
-        std::wcout << L"Finished building " << szLangName << L".gxt!\n";
-    }
-    else
-    {
-        throw std::runtime_error("Can't create " + std::string(szLangName.begin(), szLangName.end()) + ".gxt!");
-    }
-}
-
 static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileName, const GXTEnum::eGXTVersion fileVersion)
 {
-    std::unique_ptr<GXTFileBase>	fileBuilder = GXTFileBase::InstantiateBuilder(fileVersion);
     std::ifstream	inputFile(fileName, std::ifstream::binary);
 
     if (inputFile.is_open())
@@ -683,33 +583,6 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
                 }
             }
         }
-    }
-}
-
-void ProduceStats(std::ofstream& LogFile, const std::wstring& szLangName, const tableMap_t& TablesMap)
-{
-    if (LogFile.is_open())
-    {
-        time_t			currentTime;
-        size_t			numEntries = 0;
-
-        const size_t	BUF_SIZE = 30;
-        char			timeBuf[BUF_SIZE];
-
-        time(&currentTime);
-        ctime_s(timeBuf, BUF_SIZE, &currentTime);
-
-        LogFile << "\nBuilding finished at " << timeBuf << "GXT contains " << TablesMap.size() << " tables:\n";
-
-        for (const auto& it : TablesMap)
-        {
-            size_t			numTheseEntries = it.second->GetNumEntries();
-            LogFile << "\t- " << it.first.cName << " - " << numTheseEntries << " entries\n";
-            numEntries += numTheseEntries;
-        }
-
-        LogFile << '\n' << numEntries << " entries total.";
-        std::wcout << szLangName << L"_build.log generated.\n";
     }
 }
 

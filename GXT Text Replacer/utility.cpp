@@ -310,8 +310,8 @@ void CharMap::ApplyCharacterMap(std::unordered_map<std::any, std::string>& entry
 {
     for (auto& pair : entryMap)
     {
-        for (utf8::iterator<std::string::iterator> strIt(pair.second.begin(), pair.second.begin(), pair.second.end());
-            strIt.base() != pair.second.end(); ++strIt)
+        utf8::iterator<std::string::iterator> strIt(pair.second.begin(), pair.second.begin(), pair.second.end());
+        for (;strIt.base() != pair.second.end(); ++strIt)
         {
             bool	found = false;
             if (*strIt == '\0')
@@ -323,7 +323,7 @@ void CharMap::ApplyCharacterMap(std::unordered_map<std::any, std::string>& entry
                 if (*strIt == characterMap[i])
                 {
                     *strIt = (characterMap[i] + 32);
-                    bFound = true;
+                    found = true;
                     break;
                 }
             }

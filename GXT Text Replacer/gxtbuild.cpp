@@ -652,12 +652,13 @@ int wmain(int argc, wchar_t* argv[])
         }
 
         // A map of GXT tables
-        std::wstring							GXTName(argvStr[1]);
-        std::wstring							TextDirectoryToReplace(argvStr[2]);
-        std::ofstream							LogFile;
+        std::wstring GXTName(argvStr[1]);
+        std::wstring TextDirectoryToReplace(argvStr[2]);
+        std::ofstream LogFile;
 
         // Parse commandline arguments
-        GXTEnum::eGXTVersion		fileVersion = GXTEnum::eGXTVersion::GXT_SA;
+        GXTEnum::eGXTVersion fileVersion = GXTEnum::eGXTVersion::GXT_SA;
+        GXTEnum::eTextConvertingMode textConvMode = GXTEnum::eTextConvertingMode::UseAnsi;
 
         int	firstStream = 2;
         for (int i = 2; i < argc; ++i)
@@ -684,7 +685,7 @@ int wmain(int argc, wchar_t* argv[])
         {
             auto gxt = ReadGXTFile(GXTName, fileVersion);
             LogFile.open(GetFileNameNoExtension(GXTName) + L"_build.log");
-            gxt->BulkReplaceText(TextDirectoryToReplace, GXTEnum::eTextConvertingMode::UseCharacterMap, LogFile);
+            gxt->BulkReplaceText(TextDirectoryToReplace, textConvMode, LogFile);
         }
         catch (std::exception& e)
         {

@@ -310,19 +310,21 @@ void CharMap::ApplyCharacterMap(std::unordered_map<std::any, std::string>& entry
 {
     for (auto& pair : entryMap)
     {
+        std::string tempStr;
         utf8::iterator<std::string::iterator> strIt(pair.second.begin(), pair.second.begin(), pair.second.end());
         for (;strIt.base() != pair.second.end(); ++strIt)
         {
             bool	found = false;
             if (*strIt == '\0')
             {
+                tempStr.push_back('\0');
                 continue;
             }
             for (size_t i = 0; i < CHARACTER_MAP_SIZE; ++i)
             {
                 if (*strIt == characterMap[i])
                 {
-                    *strIt = (characterMap[i] + 32);
+                    tempStr.push_back(static_cast<char>(i + 32)); //Character map currently supports 16 * 14 chars 
                     found = true;
                     break;
                 }
@@ -336,6 +338,7 @@ void CharMap::ApplyCharacterMap(std::unordered_map<std::any, std::string>& entry
             }
         }
 
+        pair.second = tempStr;
     }
 }
 

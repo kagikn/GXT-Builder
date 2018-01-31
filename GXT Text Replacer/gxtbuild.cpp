@@ -152,6 +152,11 @@ namespace VC
         stream.write(reinterpret_cast<const char*>(FormattedContent.c_str()), FormattedContent.size() * sizeof(character_t));
     }
 
+    bool GXTTable::ReplaceEntries(const std::unordered_map<std::string, std::string>& entryMap)
+    {
+        return true;
+    }
+
     void GXTTable::ReadEntireContent(std::ifstream& inputStream, const uint32_t offset, const size_t size)
     {
         std::vector<uint16_t> buffer;

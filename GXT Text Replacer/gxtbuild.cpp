@@ -170,25 +170,21 @@ namespace VC
 
 namespace SA
 {
-    template<typename Character>
-    bool GXTTable<Character>::InsertEntry(const std::string& entryName, uint32_t offset)
+    bool GXTTable::InsertEntry(const std::string& entryName, uint32_t offset)
     {
         uint32_t entryHash = crc32FromUpcaseString(entryName.c_str());
         return Entries.emplace(entryHash, static_cast<uint32_t>(offset * sizeof(character_t))).second != false;
     }
-    template<typename Character>
-    bool GXTTable<Character>::InsertEntry(const uint32_t crc32EntryHash, uint32_t offset)
+    bool GXTTable::InsertEntry(const uint32_t crc32EntryHash, uint32_t offset)
     {
         return Entries.emplace(crc32EntryHash, static_cast<uint32_t>(offset * sizeof(character_t))).second != false;
     }
 
-    template<typename Character>
-    void GXTTable<Character>::ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap)
+    void GXTTable::ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap)
     {
     }
 
-    template<typename Character>
-    void GXTTable<Character>::WriteOutEntries(std::ostream& stream)
+    void GXTTable::WriteOutEntries(std::ostream& stream)
     {
         for (auto& it : Entries)
         {
@@ -197,14 +193,12 @@ namespace SA
         }
     }
 
-    template<typename Character>
-    void GXTTable<Character>::WriteOutContent(std::ostream& stream)
+    void GXTTable::WriteOutContent(std::ostream& stream)
     {
         stream.write(reinterpret_cast<const char*>(FormattedContent.c_str()), FormattedContent.size() * sizeof(character_t));
     }
 
-    template<typename Character>
-    void GXTTable<Character>::ReadEntireContent(std::ifstream& inputStream, const uint32_t offset, const size_t size)
+    void GXTTable::ReadEntireContent(std::ifstream& inputStream, const uint32_t offset, const size_t size)
     {
         std::vector<character_t> buffer;
         buffer.resize(size / sizeof(character_t));
@@ -214,8 +208,7 @@ namespace SA
         FormattedContent = std::move(std::basic_string<character_t>{ buffer.begin(), buffer.end() });
     }
 
-    template<typename Character>
-    void GXTTable<Character>::PushFormattedChar(int character)
+    void GXTTable::PushFormattedChar(int character)
     {
         FormattedContent.push_back(static_cast<character_t>(character));
     }
@@ -227,13 +220,10 @@ std::unique_ptr<GXTFileBase> GXTFileBase::InstantiateBuilder(GXTEnum::eGXTVersio
     switch (version)
     {
     case GXTEnum::eGXTVersion::GXT_VC:
-        ptr = std::make_unique< VC::GXTFile >();
+        ptr = std::make_unique<VC::GXTFile>();
         break;
     case GXTEnum::eGXTVersion::GXT_SA:
-        ptr = std::make_unique< SA::GXTFile<uint8_t> >();
-        break;
-    case GXTEnum::eGXTVersion::GXT_SA_MOBILE:
-        ptr = std::make_unique< SA::GXTFile<uint16_t> >();
+        ptr = std::make_unique<SA::GXTFile>();
         break;
     default:
         throw std::runtime_error(std::string("Trying to instantiate an unsupported GXT builder version " + version) + "!");
@@ -249,13 +239,10 @@ std::unique_ptr<GXTTableBase> GXTTableBase::InstantiateGXTTable(GXTEnum::eGXTVer
     switch (version)
     {
     case GXTEnum::eGXTVersion::GXT_VC:
-        ptr = std::make_unique< VC::GXTTable>();
+        ptr = std::make_unique<VC::GXTTable>();
         break;
     case GXTEnum::eGXTVersion::GXT_SA:
-        ptr = std::make_unique< SA::GXTTable<uint8_t> >();
-        break;
-    case GXTEnum::eGXTVersion::GXT_SA_MOBILE:
-        ptr = std::make_unique< SA::GXTTable<uint16_t> >();
+        ptr = std::make_unique<SA::GXTTable>();
         break;
     default:
         throw std::runtime_error(std::string("Trying to instantiate an unsupported GXT table version " + version) + "!");
@@ -728,8 +715,6 @@ const wchar_t* GetFormatName(GXTEnum::eGXTVersion version)
         return L"GTA Vice City";
     case GXTEnum::eGXTVersion::GXT_SA:
         return L"GTA San Andreas";
-    case GXTEnum::eGXTVersion::GXT_SA_MOBILE:
-        return L"GTA San Andreas (Mobile version)";
     }
     return L"Unsupported";
 }
@@ -806,8 +791,6 @@ int wmain(int argc, wchar_t* argv[])
                     fileVersion = GXTEnum::eGXTVersion::GXT_SA;
                 else if (tmp == L"-vc")
                     fileVersion = GXTEnum::eGXTVersion::GXT_VC;
-                else if (tmp == L"-samobile")
-                    fileVersion = GXTEnum::eGXTVersion::GXT_SA_MOBILE;
             }
             else
                 break;

@@ -220,11 +220,10 @@ namespace VC
 
 namespace SA
 {
-    template<typename Character>
     class GXTTable : public GXTTableBase
     {
     public:
-        typedef Character character_t;
+        typedef uint8_t character_t;
 
         GXTTable(std::wstring szFilePath)
             : GXTTableBase(std::move(szFilePath))
@@ -270,7 +269,6 @@ namespace SA
         std::basic_string<character_t>	FormattedContent;
     };
 
-    template<typename Character>
     class GXTFile : public GXTFileBase
     {
 
@@ -278,7 +276,7 @@ namespace SA
     private:
         virtual uint32_t WriteOutHeader(std::ostream& stream) const override
         {
-            const char		header[] = { 0x04, 0x00, sizeof(GXTTable<typename Character>::character_t) * 8, 0x00 };	// 0x080004
+            const char		header[] = { 0x04, 0x00, 0x08, 0x00 };	// 0x080004
             stream.write(header, sizeof(header));
             return sizeof(header);
         }

@@ -152,7 +152,7 @@ namespace VC
         }
 
         virtual bool	InsertEntry(const std::string& entryName, uint32_t offset) override;
-        virtual bool	ReplaceEntries(const std::unordered_map<std::string, std::string>& entryMap) = 0;
+        virtual bool	ReplaceEntries(const std::unordered_map<std::string, std::string>& entryMap) override;
         virtual void	WriteOutEntries(std::ostream& stream) override;
         virtual void	WriteOutContent(std::ostream& stream) override;
         virtual void	ReadEntireContent(std::ifstream& inputStream, const uint32_t offset, const size_t size) override;

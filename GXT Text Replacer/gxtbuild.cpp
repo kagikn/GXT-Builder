@@ -606,6 +606,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
                 case GXTEnum::eTextConvertingMode::UseAnsi:
                     break;
                 default:
+                    break;
             }
         }
         else
@@ -619,6 +620,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
             case GXTEnum::eTextConvertingMode::UseAnsi:
                 break;
             default:
+                break;
             }
         }
     }
@@ -641,6 +643,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
                 case GXTEnum::eTextConvertingMode::UseAnsi:
                     break;
                 default:
+                    break;
                 }
             }
             else
@@ -654,6 +657,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
                 case GXTEnum::eTextConvertingMode::UseAnsi:
                     break;
                 default:
+                    break;
                 }
             }
         }

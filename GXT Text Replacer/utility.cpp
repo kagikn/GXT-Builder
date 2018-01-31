@@ -68,6 +68,23 @@ std::string Encoding::Utf8ToAnsi(const std::string& utf8)
     return std::string(bufAnsi.data(), bufAnsi.data() + lengthAnsi - 1);
 }
 
+void Encoding::MapUtf8StringToAnsi(std::unordered_map<std::string, std::string>& entryMap)
+{
+    for (auto& pair : entryMap)
+    {
+        std::string ansiString = Utf8ToAnsi(pair.second);
+        pair.second = ansiString;
+    }
+}
+void Encoding::MapUtf8StringToAnsi(std::unordered_map<uint32_t, std::string>& entryMap)
+{
+    for (auto& pair : entryMap)
+    {
+        std::string ansiString = Utf8ToAnsi(pair.second);
+        pair.second = ansiString;
+    }
+}
+
 std::unordered_map<std::string, std::string> EntryLoader::LoadEntryTextsInDirectory(const std::wstring& textDirectory, std::ofstream& logFile)
 {
     namespace fs = std::experimental::filesystem::v1;

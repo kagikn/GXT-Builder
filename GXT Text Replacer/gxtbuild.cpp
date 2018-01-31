@@ -180,8 +180,9 @@ namespace SA
         return Entries.emplace(crc32EntryHash, static_cast<uint32_t>(offset * sizeof(character_t))).second != false;
     }
 
-    void GXTTable::ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap)
+    bool GXTTable::ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap)
     {
+        return true;
     }
 
     void GXTTable::WriteOutEntries(std::ostream& stream)

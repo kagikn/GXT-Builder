@@ -190,7 +190,7 @@ namespace VC
         }
         virtual bool ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap) override
         {
-            return;
+            return false;
         }
 
         virtual bool	InsertEntry(const std::string& entryName, uint32_t offset) override;
@@ -253,7 +253,7 @@ namespace SA
 
         virtual bool ReplaceEntries(const std::unordered_map<std::string, std::string>& entryMap) override
         {
-            return;
+            return false;
         }
 
         virtual bool	InsertEntry(const std::string& entryName, uint32_t offset) override;

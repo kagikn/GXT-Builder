@@ -602,8 +602,14 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
             switch (textConvertingMode)
             {
                 case GXTEnum::eTextConvertingMode::UseCharacterMap:
+                {
+                    CharMap::ApplyCharacterMap(entryMap, charMap.value());
+                }
                     break;
                 case GXTEnum::eTextConvertingMode::UseAnsi:
+                {
+                    Encoding::MapUtf8StringToAnsi(entryMap);
+                }
                     break;
                 default:
                     break;
@@ -615,12 +621,18 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
 
             switch (textConvertingMode)
             {
-            case GXTEnum::eTextConvertingMode::UseCharacterMap:
-                break;
-            case GXTEnum::eTextConvertingMode::UseAnsi:
-                break;
-            default:
-                break;
+                case GXTEnum::eTextConvertingMode::UseCharacterMap:
+                {
+                    CharMap::ApplyCharacterMap(entryMap, charMap.value());
+                }
+                    break;
+                case GXTEnum::eTextConvertingMode::UseAnsi:
+                {
+                    Encoding::MapUtf8StringToAnsi(entryMap);
+                }
+                    break;
+                default:
+                    break;
             }
         }
     }
@@ -638,12 +650,18 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
 
                 switch (textConvertingMode)
                 {
-                case GXTEnum::eTextConvertingMode::UseCharacterMap:
-                    break;
-                case GXTEnum::eTextConvertingMode::UseAnsi:
-                    break;
-                default:
-                    break;
+                    case GXTEnum::eTextConvertingMode::UseCharacterMap:
+                    {
+                        CharMap::ApplyCharacterMap(entryMap, charMap.value());
+                    }
+                        break;
+                    case GXTEnum::eTextConvertingMode::UseAnsi:
+                    {
+                        Encoding::MapUtf8StringToAnsi(entryMap);
+                    }
+                        break;
+                    default:
+                        break;
                 }
             }
             else
@@ -652,12 +670,18 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
 
                 switch (textConvertingMode)
                 {
-                case GXTEnum::eTextConvertingMode::UseCharacterMap:
-                    break;
-                case GXTEnum::eTextConvertingMode::UseAnsi:
-                    break;
-                default:
-                    break;
+                    case GXTEnum::eTextConvertingMode::UseCharacterMap:
+                    {
+                        CharMap::ApplyCharacterMap(entryMap, charMap.value());
+                    }
+                        break;
+                    case GXTEnum::eTextConvertingMode::UseAnsi:
+                    {
+                        Encoding::MapUtf8StringToAnsi(entryMap);
+                    }
+                        break;
+                    default:
+                        break;
                 }
             }
         }

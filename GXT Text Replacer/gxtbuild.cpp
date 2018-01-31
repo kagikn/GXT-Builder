@@ -183,6 +183,11 @@ namespace SA
     }
 
     template<typename Character>
+    void GXTTable<Character>::ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap)
+    {
+    }
+
+    template<typename Character>
     void GXTTable<Character>::WriteOutEntries(std::ostream& stream)
     {
         for (auto& it : Entries)

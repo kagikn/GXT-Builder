@@ -30,6 +30,8 @@ public:
 public:
     virtual bool	InsertEntry(const std::string& entryName, uint32_t offset) = 0;
     virtual bool	InsertEntry(const uint32_t crc32EntryHash, uint32_t offset) = 0;
+    virtual bool	ReplaceEntries(const std::unordered_map<std::string, std::string>& entryMap) = 0;
+    virtual bool	ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap) = 0;
     virtual bool	UsesHashForEntryName() = 0;
     virtual size_t	GetNumEntries() = 0;
     virtual size_t	GetFormattedContentSize() = 0;
@@ -186,8 +188,13 @@ namespace VC
         {
             return false;
         }
+        virtual bool ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap) override
+        {
+            return;
+        }
 
         virtual bool	InsertEntry(const std::string& entryName, uint32_t offset) override;
+        virtual bool	ReplaceEntries(const std::unordered_map<std::string, std::string>& entryMap) = 0;
         virtual void	WriteOutEntries(std::ostream& stream) override;
         virtual void	WriteOutContent(std::ostream& stream) override;
         virtual void	ReadEntireContent(std::ifstream& inputStream, const uint32_t offset, const size_t size) override;
@@ -245,8 +252,14 @@ namespace SA
             return true;
         }
 
+        virtual bool ReplaceEntries(const std::unordered_map<std::string, std::string>& entryMap) override
+        {
+            return;
+        }
+
         virtual bool	InsertEntry(const std::string& entryName, uint32_t offset) override;
         virtual bool	InsertEntry(const uint32_t crc32EntryHash, uint32_t offset) override;
+        virtual bool    ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap) override;
         virtual void	WriteOutEntries(std::ostream& stream) override;
         virtual void	WriteOutContent(std::ostream& stream) override;
         virtual void	ReadEntireContent(std::ifstream& inputStream, const uint32_t offset, const size_t size) override;

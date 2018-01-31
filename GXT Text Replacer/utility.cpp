@@ -338,7 +338,42 @@ CharMapArray CharMap::ParseCharacterMap(const std::wstring& szFileName)
     return characterMap;
 }
 
-void CharMap::ApplyCharacterMap(std::unordered_map<std::any, std::string>& entryMap, const CharMapArray& characterMap)
+void CharMap::ApplyCharacterMap(std::unordered_map<std::string, std::string>& entryMap, const CharMapArray& characterMap)
+{
+    for (auto& pair : entryMap)
+    {
+        std::string tempStr;
+        utf8::iterator<std::string::iterator> strIt(pair.second.begin(), pair.second.begin(), pair.second.end());
+        for (; strIt.base() != pair.second.end(); ++strIt)
+        {
+            bool	found = false;
+            if (*strIt == '\0')
+            {
+                tempStr.push_back('\0');
+                continue;
+            }
+            for (size_t i = 0; i < CHARACTER_MAP_SIZE; ++i)
+            {
+                if (*strIt == characterMap[i])
+                {
+                    tempStr.push_back(static_cast<char>(i + 32)); //Character map currently supports 16 * 14 chars 
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                std::ostringstream tmpstream;
+                tmpstream << "Can't locate character \"" << static_cast<wchar_t>(*strIt) << "\" (" << *strIt << ") in a character map!";
+                throw std::runtime_error(tmpstream.str());
+            }
+        }
+
+        pair.second = tempStr;
+    }
+}
+void CharMap::ApplyCharacterMap(std::unordered_map<uint32_t, std::string>& entryMap, const CharMapArray& characterMap)
 {
     for (auto& pair : entryMap)
     {

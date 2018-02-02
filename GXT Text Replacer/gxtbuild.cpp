@@ -602,31 +602,17 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
                 default:
                     break;
             }
+
+            _mainTable._GXTTable->ReplaceEntries(entryMap);
         }
         else
         {
-            auto entryMap = EntryLoader::LoadEntryTextsInDirectory(textDirectoryForMainTable, logFile);
-
-            switch (textConvertingMode)
-            {
-                case GXTEnum::eTextConvertingMode::UseCharacterMap:
-                {
-                    CharMap::ApplyCharacterMap(entryMap, charMap.value());
-                }
-                    break;
-                case GXTEnum::eTextConvertingMode::UseAnsi:
-                {
-                    Encoding::MapUtf8StringToAnsi(entryMap);
-                }
-                    break;
-                default:
-                    break;
-            }
+            //Not implemented
         }
     }
 
     auto& missionGXTTables = GetMissionTableMap();
-    for (const auto& missionTable : missionGXTTables)
+    for (auto& missionTable : missionGXTTables)
     {
         const std::wstring missionTableName = Encoding::AnsiStringToWString(missionTable.second->_tableName);
         const std::wstring textDirectoryForMissionTable(textSourceDirectory + directorySeparatorChar + missionTableName);
@@ -651,26 +637,12 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
                     default:
                         break;
                 }
+
+                missionTable.second->_GXTTable->ReplaceEntries(entryMap);
             }
             else
             {
-                auto entryMap = EntryLoader::LoadEntryTextsInDirectory(textDirectoryForMainTable, logFile);
-
-                switch (textConvertingMode)
-                {
-                    case GXTEnum::eTextConvertingMode::UseCharacterMap:
-                    {
-                        CharMap::ApplyCharacterMap(entryMap, charMap.value());
-                    }
-                        break;
-                    case GXTEnum::eTextConvertingMode::UseAnsi:
-                    {
-                        Encoding::MapUtf8StringToAnsi(entryMap);
-                    }
-                        break;
-                    default:
-                        break;
-                }
+                //Not implemented
             }
         }
     }
@@ -759,8 +731,6 @@ int wmain(int argc, wchar_t* argv[])
                 firstStream++;
                 if (tmp == L"-sa")
                     fileVersion = GXTEnum::eGXTVersion::GXT_SA;
-                else if (tmp == L"-vc")
-                    fileVersion = GXTEnum::eGXTVersion::GXT_VC;
             }
             else
                 break;

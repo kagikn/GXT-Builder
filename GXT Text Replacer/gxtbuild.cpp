@@ -182,7 +182,7 @@ namespace VC
             auto itr = entryMap.find(pair.second);
             if (itr != entryMap.end())
             {
-                Entries[pair.second] = newFormattedStr.size() * sizeof(wchar_t);
+                Entries[pair.second] = static_cast<uint32_t>(newFormattedStr.size() * sizeof(wchar_t));
 
                 auto contentStr = itr->second;
                 contentStr += '0';
@@ -190,7 +190,7 @@ namespace VC
             }
             else
             {
-                Entries[pair.second] = newFormattedStr.size();
+                Entries[pair.second] = static_cast<uint32_t>(newFormattedStr.size());
 
                 auto contentStr = originalContentStrings.at(index);
                 contentStr += '0';
@@ -260,7 +260,7 @@ namespace SA
             auto itr = entryMap.find(pair.second);
             if (itr != entryMap.end())
             {
-                Entries[pair.second] = newFormattedStr.size();
+                Entries[pair.second] = static_cast<uint32_t>(newFormattedStr.size());
 
                 auto contentStr = itr->second;
                 contentStr += '0';
@@ -268,7 +268,7 @@ namespace SA
             }
             else
             {
-                Entries[pair.second] = newFormattedStr.size();
+                Entries[pair.second] = static_cast<uint32_t>(newFormattedStr.size());
 
                 auto contentStr = originalContentStrings.at(index);
                 contentStr += '0';

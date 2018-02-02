@@ -146,7 +146,7 @@ namespace VC
         {
             return false;
         }
-        virtual bool ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap) override
+        virtual bool ReplaceEntries(const std::unordered_map<uint32_t, std::string>&) override
         {
             return false;
         }
@@ -199,7 +199,7 @@ namespace SA
             return true;
         }
 
-        virtual bool ReplaceEntries(const std::unordered_map<std::string, std::wstring>& entryMap) override
+        virtual bool ReplaceEntries(const std::unordered_map<std::string, std::wstring>&) override
         {
             return false;
         }

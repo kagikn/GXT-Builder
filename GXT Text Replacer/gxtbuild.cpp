@@ -744,7 +744,7 @@ int wmain(int argc, wchar_t* argv[])
         try
         {
             auto gxt = ReadGXTFile(GXTName, fileVersion);
-            LogFile.open(GetFileNameNoExtension(GXTName) + L"_build.log");
+            LogFile.open(GetFileNameNoExtension(GXTName) + L"_replace.log");
             gxt->BulkReplaceText(TextDirectoryToReplace, textConvMode, LogFile);
         }
         catch (std::exception& e)

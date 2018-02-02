@@ -46,6 +46,14 @@ public:
     static bool IsValid(std::ifstream& file);
 };
 
+class StringExtension
+{
+public:
+    static std::vector<std::string> SplitString(const std::string &txt, const char separator);
+    static std::vector<std::wstring> SplitWString(const std::wstring &txt, const wchar_t separator);
+
+};
+
 static const size_t CHARACTER_MAP_WIDTH = 16;
 static const size_t CHARACTER_MAP_HEIGHT = 14;
 static const size_t CHARACTER_MAP_SIZE = CHARACTER_MAP_WIDTH * CHARACTER_MAP_HEIGHT;

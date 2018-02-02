@@ -289,6 +289,48 @@ std::optional<uint32_t> EntryLoader::HexStringToUInt32(const std::string& hexStr
     }
 }
 
+std::vector<std::string> StringExtension::SplitString(const std::string &txt, const char separator)
+{
+    std::vector<std::string> strVector;
+
+    size_t pos = txt.find(separator);
+    size_t initialPos = 0;
+
+    while (pos != std::string::npos)
+    {
+        strVector.push_back(txt.substr(initialPos, pos - initialPos + 1));
+        initialPos = pos + 1;
+
+        pos = txt.find(separator, initialPos);
+    }
+
+    size_t subStrCount = (std::min)(pos, txt.size() - initialPos + 1);
+    strVector.push_back(txt.substr(initialPos, subStrCount));
+
+    return strVector;
+}
+
+std::vector<std::wstring> StringExtension::SplitWString(const std::wstring &txt, const wchar_t separator)
+{
+    std::vector<std::wstring> strVector;
+
+    size_t pos = txt.find(separator);
+    size_t initialPos = 0;
+
+    while (pos != std::wstring::npos)
+    {
+        strVector.push_back(txt.substr(initialPos, pos - initialPos + 1));
+        initialPos = pos + 1;
+
+        pos = txt.find(separator, initialPos);
+    }
+
+    size_t subStrCount = (std::min)(pos, txt.size() - initialPos + 1);
+    strVector.push_back(txt.substr(initialPos, subStrCount));
+
+    return strVector;
+}
+
 bool Utf8Validator::IsValid(std::ifstream& file)
 {
     std::istreambuf_iterator<char> it(file.rdbuf());

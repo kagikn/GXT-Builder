@@ -152,8 +152,53 @@ namespace VC
         stream.write(reinterpret_cast<const char*>(FormattedContent.c_str()), FormattedContent.size() * sizeof(character_t));
     }
 
-    bool GXTTable::ReplaceEntries(const std::unordered_map<std::string, std::string>& entryMap)
+    bool GXTTable::ReplaceEntries(const std::unordered_map<std::string, std::wstring>& entryMap)
     {
+        if (entryMap.size() == 0)
+        {
+            return false;
+        }
+
+        using offset = uint32_t;
+        using entryName = std::string;
+
+        std::vector<std::pair<offset, entryName>> tempPairs;
+        tempPairs.reserve(Entries.size());
+
+        for (auto entryPair : Entries)
+        {
+            tempPairs.push_back(std::make_pair(entryPair.second, entryPair.first));
+        }
+
+        std::sort(tempPairs.begin(), tempPairs.end());
+
+        const auto originalContentStrings = StringExtension::SplitWString(FormattedContent, '0');
+
+        uint32_t index = 0;
+        std::wstring newFormattedStr;
+        newFormattedStr.reserve(FormattedContent.size());
+        for (auto pair : tempPairs)
+        {
+            auto itr = entryMap.find(pair.second);
+            if (itr != entryMap.end())
+            {
+                Entries[pair.second] = newFormattedStr.size() * sizeof(wchar_t);
+
+                auto contentStr = itr->second;
+                contentStr += '0';
+                newFormattedStr += contentStr;
+            }
+            else
+            {
+                Entries[pair.second] = newFormattedStr.size();
+
+                auto contentStr = originalContentStrings.at(index);
+                contentStr += '0';
+                newFormattedStr += contentStr;
+            }
+        }
+        FormattedContent = newFormattedStr;
+
         return true;
     }
 
@@ -164,7 +209,7 @@ namespace VC
 
         inputStream.seekg(offset, std::ios_base::beg);
 
-        FormattedContent = std::basic_string<character_t>{ buffer.begin(), buffer.end() };
+        FormattedContent = std::wstring{ buffer.begin(), buffer.end() };
     }
 
     void GXTTable::PushFormattedChar(int character)
@@ -187,6 +232,51 @@ namespace SA
 
     bool GXTTable::ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap)
     {
+        if (entryMap.size() == 0)
+        {
+            return false;
+        }
+
+        using hash = uint32_t;
+        using offset = uint32_t;
+
+        std::vector<std::pair<offset, hash>> tempPairs;
+        tempPairs.reserve(Entries.size());
+
+        for (auto entryPair : Entries)
+        {
+            tempPairs.push_back(std::make_pair(entryPair.second, entryPair.first));
+        }
+
+        std::sort(tempPairs.begin(), tempPairs.end());
+
+        const auto originalContentStrings = StringExtension::SplitString(FormattedContent, '0');
+
+        uint32_t index = 0;
+        std::string newFormattedStr;
+        newFormattedStr.reserve(FormattedContent.size());
+        for (auto pair : tempPairs)
+        {
+            auto itr = entryMap.find(pair.second);
+            if (itr != entryMap.end())
+            {
+                Entries[pair.second] = newFormattedStr.size();
+
+                auto contentStr = itr->second;
+                contentStr += '0';
+                newFormattedStr += contentStr;
+            }
+            else
+            {
+                Entries[pair.second] = newFormattedStr.size();
+
+                auto contentStr = originalContentStrings.at(index);
+                contentStr += '0';
+                newFormattedStr += contentStr;
+            }
+        }
+        FormattedContent = newFormattedStr;
+
         return true;
     }
 
@@ -211,7 +301,7 @@ namespace SA
 
         inputStream.seekg(offset, std::ios_base::beg);
 
-        FormattedContent = std::move(std::basic_string<character_t>{ buffer.begin(), buffer.end() });
+        FormattedContent = std::move(std::string{ buffer.begin(), buffer.end() });
     }
 
     void GXTTable::PushFormattedChar(int character)

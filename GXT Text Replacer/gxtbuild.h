@@ -30,7 +30,7 @@ public:
 public:
     virtual bool	InsertEntry(const std::string& entryName, uint32_t offset) = 0;
     virtual bool	InsertEntry(const uint32_t crc32EntryHash, uint32_t offset) = 0;
-    virtual bool	ReplaceEntries(const std::unordered_map<std::string, std::string>& entryMap) = 0;
+    virtual bool	ReplaceEntries(const std::unordered_map<std::string, std::wstring>& entryMap) = 0;
     virtual bool	ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap) = 0;
     virtual bool	UsesHashForEntryName() = 0;
     virtual size_t	GetNumEntries() = 0;
@@ -152,17 +152,17 @@ namespace VC
         }
 
         virtual bool	InsertEntry(const std::string& entryName, uint32_t offset) override;
-        virtual bool	ReplaceEntries(const std::unordered_map<std::string, std::string>& entryMap) override;
+        virtual bool	ReplaceEntries(const std::unordered_map<std::string, std::wstring>& entryMap) override;
         virtual void	WriteOutEntries(std::ostream& stream) override;
         virtual void	WriteOutContent(std::ostream& stream) override;
         virtual void	ReadEntireContent(std::ifstream& inputStream, const uint32_t offset, const size_t size) override;
         virtual void	PushFormattedChar(int character) override;
 
     private:
-        static const size_t		GXT_ENTRY_NAME_LEN = 8;
+        static const size_t	GXT_ENTRY_NAME_LEN = 8;
 
         std::map<std::string, uint32_t>	Entries;
-        std::basic_string<character_t>	FormattedContent;
+        std::wstring FormattedContent;
     };
 };
 
@@ -199,7 +199,7 @@ namespace SA
             return true;
         }
 
-        virtual bool ReplaceEntries(const std::unordered_map<std::string, std::string>& entryMap) override
+        virtual bool ReplaceEntries(const std::unordered_map<std::string, std::wstring>& entryMap) override
         {
             return false;
         }
@@ -213,8 +213,8 @@ namespace SA
         virtual void	PushFormattedChar(int character) override;
 
     private:
-        std::map<uint32_t, uint32_t>	Entries;
-        std::basic_string<character_t>	FormattedContent;
+        std::map<uint32_t, uint32_t> Entries;
+        std::string	FormattedContent;
     };
 };
 

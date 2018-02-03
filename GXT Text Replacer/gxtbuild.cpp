@@ -196,6 +196,8 @@ namespace VC
                 contentStr += '0';
                 newFormattedStr += contentStr;
             }
+
+            index++;
         }
         FormattedContent = newFormattedStr;
 
@@ -208,6 +210,7 @@ namespace VC
         buffer.resize(size / sizeof(uint16_t));
 
         inputStream.seekg(offset, std::ios_base::beg);
+        inputStream.read(reinterpret_cast<char *>(buffer.data()), size);
 
         FormattedContent = std::wstring{ buffer.begin(), buffer.end() };
     }
@@ -223,15 +226,16 @@ namespace SA
     bool GXTTable::InsertEntry(const std::string& entryName, uint32_t offset)
     {
         uint32_t entryHash = crc32FromUpcaseString(entryName.c_str());
-        return Entries.emplace(entryHash, static_cast<uint32_t>(offset * sizeof(character_t))).second != false;
+        return Entries.emplace(entryHash, offset).second != false;
     }
     bool GXTTable::InsertEntry(const uint32_t crc32EntryHash, uint32_t offset)
     {
-        return Entries.emplace(crc32EntryHash, static_cast<uint32_t>(offset * sizeof(character_t))).second != false;
+        return Entries.emplace(crc32EntryHash, offset).second != false;
     }
 
     bool GXTTable::ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap)
     {
+
         if (entryMap.size() == 0)
         {
             return false;
@@ -250,7 +254,7 @@ namespace SA
 
         std::sort(tempPairs.begin(), tempPairs.end());
 
-        const auto originalContentStrings = StringExtension::SplitString(FormattedContent, '0');
+        const auto originalContentStrings = StringExtension::SplitString(FormattedContent, '\0');
 
         uint32_t index = 0;
         std::string newFormattedStr;
@@ -263,17 +267,18 @@ namespace SA
                 Entries[pair.second] = static_cast<uint32_t>(newFormattedStr.size());
 
                 auto contentStr = itr->second;
-                contentStr += '0';
+                contentStr += '\0';
                 newFormattedStr += contentStr;
             }
             else
             {
                 Entries[pair.second] = static_cast<uint32_t>(newFormattedStr.size());
+                auto contentStr = originalContentStrings[index];
+                contentStr += '\0';
 
-                auto contentStr = originalContentStrings.at(index);
-                contentStr += '0';
                 newFormattedStr += contentStr;
             }
+            index++;
         }
         FormattedContent = newFormattedStr;
 
@@ -296,10 +301,11 @@ namespace SA
 
     void GXTTable::ReadEntireContent(std::ifstream& inputStream, const uint32_t offset, const size_t size)
     {
-        std::vector<character_t> buffer;
-        buffer.resize(size / sizeof(character_t));
+        std::vector<char> buffer;
+        buffer.resize(size);
 
         inputStream.seekg(offset, std::ios_base::beg);
+        inputStream.read(buffer.data(), size);
 
         FormattedContent = std::move(std::string{ buffer.begin(), buffer.end() });
     }
@@ -374,7 +380,8 @@ size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint
     inputStream.read(sizeBuf.data(), BLOCK_SIZE_STORAGE_SIZE);
     const uint32_t	TKEYBlockSize = *(uint32_t*)sizeBuf.data();
 
-    std::array<char, 4> entryOffsetBuf;
+    uint32_t entryOffsetBuf;
+    uint32_t entryHashBuf;
     std::string entryBuf(8, NULL);
 
     DEBUG_WCOUT(L"TKEY Block Offset" << inputStream.tellg() << "\n");
@@ -383,18 +390,18 @@ size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint
     {
         if (usesHashForEntryName)
         {
-            inputStream.read(entryOffsetBuf.data(), 4);
-            const uint32_t	entryOffset = *(uint32_t*)entryBuf.data();
+            inputStream.read(reinterpret_cast<char *>(&entryOffsetBuf), 4);
+            const uint32_t entryOffset = entryOffsetBuf;
 
-            inputStream.read(&entryBuf[0], 4);
-            const uint32_t	entryHash = *(uint32_t*)entryBuf.data();
+            inputStream.read(reinterpret_cast<char *>(&entryHashBuf), 4);
+            const uint32_t entryHash = entryHashBuf;
 
             InsertEntry(entryHash, entryOffset);
         }
         else
         {
-            inputStream.read(entryOffsetBuf.data(), 4);
-            const uint32_t	entryOffset = *(uint32_t*)entryBuf.data();
+            inputStream.read(reinterpret_cast<char *>(&entryOffsetBuf), 4);
+            const uint32_t entryOffset = entryOffsetBuf;
 
             inputStream.read(&entryBuf[0], 8);
 
@@ -704,6 +711,8 @@ int wmain(int argc, wchar_t* argv[])
     std::wcout << L"GXT Text Replacer v1.0\nMade by kagikn, Special thanks to Silent\n";
 
     const std::vector<std::wstring> argvStr = MakeStringArgv(argv);
+
+    setlocale(LC_CTYPE, "");
 
     if (argc >= 3)
     {

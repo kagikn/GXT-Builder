@@ -291,23 +291,24 @@ std::optional<uint32_t> EntryLoader::HexStringToUInt32(const std::string& hexStr
 
 std::vector<std::string> StringExtension::SplitString(const std::string &txt, const char separator)
 {
-    std::vector<std::string> strVector;
-
-    size_t pos = txt.find(separator);
-    size_t initialPos = 0;
-
-    while (pos != std::string::npos)
+    std::vector<std::string> elems;
+    std::string item;
+    for (char ch : txt)
     {
-        strVector.push_back(txt.substr(initialPos, pos - initialPos + 1));
-        initialPos = pos + 1;
-
-        pos = txt.find(separator, initialPos);
+        if (ch == separator)
+        {
+            if (!item.empty())
+                elems.push_back(item);
+            item.clear();
+        }
+        else
+        {
+            item += ch;
+        }
     }
-
-    size_t subStrCount = (std::min)(pos, txt.size() - initialPos + 1);
-    strVector.push_back(txt.substr(initialPos, subStrCount));
-
-    return strVector;
+    if (!item.empty())
+        elems.push_back(item);
+    return elems;
 }
 
 std::vector<std::wstring> StringExtension::SplitWString(const std::wstring &txt, const wchar_t separator)

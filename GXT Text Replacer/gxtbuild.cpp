@@ -374,7 +374,6 @@ size_t GXTTableBase::ReadTKEYAndTDATBlock(std::ifstream& inputStream, const uint
     if (!std::equal(headerBuf.cbegin(), headerBuf.cend(), HEADER_TKEY.cbegin()))
     {
         throw std::runtime_error("The TKEY header wasn't found!");
-        return 0;
     }
 
     inputStream.read(sizeBuf.data(), BLOCK_SIZE_STORAGE_SIZE);
@@ -456,7 +455,6 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
             if (headerValue != 0x080004 && headerValue != 0x100004)
             {
                 throw std::runtime_error("Incorrect GXT version!");
-                return nullptr;
             }
 
             dwCurrentOffset += HEADER_SIZE;
@@ -471,7 +469,6 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         if (!std::equal(headerBuf.cbegin(), headerBuf.cend(), HEADER_TABL.cbegin()))
         {
             throw std::runtime_error("The TABL header wasn't found!");
-            return nullptr;
         }
 
         dwCurrentOffset += HEADER_SIZE;
@@ -483,7 +480,6 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
         if (dwBlockSize < 12)
         {
             throw std::runtime_error("The GXT file is corrupted!");
-            return nullptr;
         }
 
         dwCurrentOffset += 4;
@@ -541,7 +537,6 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
                 errorStr.append(std::to_string(inputFile.tellg()));
                 errorStr.append("\n");
                 throw std::runtime_error(errorStr);
-                return nullptr;
             }
 
             dwCurrentOffset += 8;
@@ -570,7 +565,115 @@ static std::unique_ptr<GXTTableCollection> ReadGXTFile(const std::wstring& fileN
     else
     {
         throw std::runtime_error("Can't open " + std::string(fileName.begin(), fileName.end()) + ".gxt!");
-        return nullptr;
+    }
+}
+
+bool GXTTableCollection::WriteGXTFile(const std::wstring& fileName)
+{
+    std::ofstream	outputFile(fileName, std::ofstream::binary);
+    if (outputFile.is_open())
+    {
+        uint32_t		currentOffset = 0;
+
+        // Header
+        if (_fileVersion == GXTEnum::eGXTVersion::GXT_SA)
+        {
+            const char		header[] = { 0x04, 0x00, 0x08, 0x00 };
+            outputFile.write(header, sizeof(header));
+            currentOffset += 4;
+        }
+
+        // Write TABL section
+        {
+            const char		header[] = { 'T', 'A', 'B', 'L' };
+            outputFile.write(header, sizeof(header));
+
+            const uint32_t	dwBlockSize = static_cast<uint32_t>(12 + _missionTable.size() * 12);
+            outputFile.write(reinterpret_cast<const char*>(&dwBlockSize), sizeof(dwBlockSize));
+
+            currentOffset += sizeof(header) + sizeof(dwBlockSize) + dwBlockSize;
+
+            {
+                outputFile.write(_mainTable._tableName.c_str(), 8);
+                outputFile.write(reinterpret_cast<const char*>(&currentOffset), sizeof(currentOffset));
+                currentOffset += static_cast<uint32_t>(16 + (_mainTable._GXTTable->GetNumEntries() * _mainTable._GXTTable->GetEntrySize()) + _mainTable._GXTTable->GetFormattedContentSize());
+
+                // Align to 4 bytes
+                currentOffset = (currentOffset + 4 - 1) & ~(4 - 1);
+            }
+
+            for (auto& ite : _missionTable)
+            {
+                outputFile.write(ite.second->_tableName.c_str(), 8);
+                outputFile.write(reinterpret_cast<const char*>(&currentOffset), sizeof(currentOffset));
+                currentOffset += static_cast<uint32_t>(16 + 8 + (ite.second->_GXTTable->GetNumEntries() * ite.second->_GXTTable->GetEntrySize()) + ite.second->_GXTTable->GetFormattedContentSize());
+
+                // Align to 4 bytes
+                currentOffset = (currentOffset + 4 - 1) & ~(4 - 1);
+            }
+        }
+
+        // Write TKEY and TDAT sections
+
+        {
+            {
+                const char		header[] = { 'T', 'K', 'E', 'Y' };
+                outputFile.write(header, sizeof(header));
+                const uint32_t	dwBlockSize = static_cast<uint32_t>(_mainTable._GXTTable->GetNumEntries() * _mainTable._GXTTable->GetEntrySize());
+                outputFile.write(reinterpret_cast<const char*>(&dwBlockSize), sizeof(dwBlockSize));
+
+                // Write TKEY entries
+                _mainTable._GXTTable->WriteOutEntries(outputFile);
+            }
+
+            {
+                const char		header[] = { 'T', 'D', 'A', 'T' };
+                outputFile.write(header, sizeof(header));
+                const uint32_t	dwBlockSize = static_cast<uint32_t>(_mainTable._GXTTable->GetFormattedContentSize());
+                outputFile.write(reinterpret_cast<const char*>(&dwBlockSize), sizeof(dwBlockSize));
+
+                _mainTable._GXTTable->WriteOutContent(outputFile);
+            }
+
+            // Align to 4 bytes
+            if (outputFile.tellp() % 4)
+                outputFile.seekp(4 - (outputFile.tellp() % 4), std::ios_base::cur);
+        }
+        for (const auto& ite : _missionTable)
+        {
+            outputFile.write(ite.second->_tableName.c_str(), 8);
+
+            {
+                const char		header[] = { 'T', 'K', 'E', 'Y' };
+                outputFile.write(header, sizeof(header));
+                const uint32_t	dwBlockSize = static_cast<uint32_t>(ite.second->_GXTTable->GetNumEntries() * ite.second->_GXTTable->GetEntrySize());
+                outputFile.write(reinterpret_cast<const char*>(&dwBlockSize), sizeof(dwBlockSize));
+
+                // Write TKEY entries
+                ite.second->_GXTTable->WriteOutEntries(outputFile);
+            }
+
+            {
+                const char		header[] = { 'T', 'D', 'A', 'T' };
+                outputFile.write(header, sizeof(header));
+                const uint32_t	dwBlockSize = static_cast<uint32_t>(ite.second->_GXTTable->GetFormattedContentSize());
+                outputFile.write(reinterpret_cast<const char*>(&dwBlockSize), sizeof(dwBlockSize));
+
+                ite.second->_GXTTable->WriteOutContent(outputFile);
+            }
+
+            // Align to 4 bytes
+            if (outputFile.tellp() % 4)
+                outputFile.seekp(4 - (outputFile.tellp() % 4), std::ios_base::cur);
+        }
+
+        std::wcout << L"Finished writing " << fileName << L"!\n";
+        return true;
+    }
+    else
+    {
+        throw std::runtime_error("Can't create " + std::string(fileName.begin(), fileName.end()) + "!");
+        return false;
     }
 }
 
@@ -755,6 +858,7 @@ int wmain(int argc, wchar_t* argv[])
             auto gxt = ReadGXTFile(GXTName, fileVersion);
             LogFile.open(GetFileNameNoExtension(GXTName) + L"_replace.log");
             gxt->BulkReplaceText(TextDirectoryToReplace, textConvMode, LogFile);
+            gxt->WriteGXTFile(GXTName);
         }
         catch (std::exception& e)
         {

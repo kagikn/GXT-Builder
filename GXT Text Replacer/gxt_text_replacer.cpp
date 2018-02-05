@@ -674,7 +674,7 @@ bool GXTTableCollection::WriteGXTFile(const std::wstring& fileName)
     }
 }
 
-void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTEnum::eTextConvertingMode textConvertingMode, std::ofstream& logFile)
+void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTEnum::eTextConvertingMode textConvertingMode, int ansiCodePage, std::ofstream& logFile)
 {
     namespace fs = std::experimental::filesystem::v1;
     constexpr auto directorySeparatorChar = L"\\";
@@ -703,7 +703,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
                     break;
                 case GXTEnum::eTextConvertingMode::UseAnsi:
                 {
-                    Encoding::MapUtf8StringToAnsi(entryMap);
+                    Encoding::MapUtf8StringToAnsi(entryMap, ansiCodePage);
                 }
                     break;
                 default:
@@ -738,7 +738,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
                         break;
                     case GXTEnum::eTextConvertingMode::UseAnsi:
                     {
-                        Encoding::MapUtf8StringToAnsi(entryMap);
+                        Encoding::MapUtf8StringToAnsi(entryMap, ansiCodePage);
                     }
                         break;
                     default:
@@ -798,9 +798,15 @@ static std::vector<std::wstring> MakeStringArgv(wchar_t* argv[])
     return result;
 }
 
-static const char* const helpText = "Usage:\tgxt_text_replacer.exe [GXT filename] [Text folder] [-usecharmap] [-ansitext] [-unicodetext]\n"
+static const char* const helpText = "Usage:\tgxt_text_replacer.exe [GXT filename] [Text folder] [-usecharmap] [-ansitext] [-unicodetext] [-ansicodepage (value)]\n"
 "\t-usecharmap - Convert texts using character map\n\t-ansitext - Convert texts into ansi characters (the current default setting)\n"
-"\t-unicodetext - Convert texts into UTF-16 texts if GXT file content uses 16 bit char text, or doesn't convert if GXT file content uses 8 bit char text\n";
+"\t-unicodetext - Convert texts into UTF-16 texts if GXT file content uses 16 bit char text, or doesn't convert if GXT file content uses 8 bit char text\n"
+"\t-ansicodepage - Specify ANSI code page for converting text into ANSI ones\n";
+
+namespace 
+{
+    int AnsiCodePage = GetACP();
+}
 
 int wmain(int argc, wchar_t* argv[])
 {
@@ -827,6 +833,7 @@ int wmain(int argc, wchar_t* argv[])
         // Parse commandline arguments
         GXTEnum::eGXTVersion fileVersion = GXTEnum::eGXTVersion::GXT_SA;
         GXTEnum::eTextConvertingMode textConvMode = GXTEnum::eTextConvertingMode::UseAnsi;
+        int ansiCodePage = GetACP();
 
         int	firstStream = 2;
         for (int i = 2; i < argc; ++i)
@@ -841,6 +848,11 @@ int wmain(int argc, wchar_t* argv[])
                     textConvMode = GXTEnum::eTextConvertingMode::UseCharacterMap;
                 if (tmp == L"-unicodetext")
                     textConvMode = GXTEnum::eTextConvertingMode::UseUtf8OrUtf16;
+
+                if (tmp == L"-ansicodepage" && i + 1 < argc)
+                {
+                    ansiCodePage = std::stoi(argvStr[i + 1]);
+                }
             }
             else
                 break;
@@ -855,7 +867,7 @@ int wmain(int argc, wchar_t* argv[])
         {
             auto gxt = ReadGXTFile(GXTName, fileVersion);
             LogFile.open(GetFileNameNoExtension(GXTName) + L"_replace.log");
-            gxt->BulkReplaceText(TextDirectoryToReplace, textConvMode, LogFile);
+            gxt->BulkReplaceText(TextDirectoryToReplace, textConvMode, ansiCodePage, LogFile);
             gxt->WriteGXTFile(GXTName);
         }
         catch (std::exception& e)

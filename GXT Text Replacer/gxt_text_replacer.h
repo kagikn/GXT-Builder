@@ -96,7 +96,7 @@ public:
 
     bool WriteGXTFile(const std::wstring& fileName);
     void AddNewMissionTable(std::string& tableName, uint32_t absoluteTableOffset);
-    void BulkReplaceText(std::wstring& textSourceDirectory, GXTEnum::eTextConvertingMode textConvertingMode, std::ofstream& logFile);
+    void BulkReplaceText(std::wstring& textSourceDirectory, GXTEnum::eTextConvertingMode textConvertingMode, int ansiCodePage, std::ofstream& logFile);
 
     bool HasAnyMissionTables()
     {

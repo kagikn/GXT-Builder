@@ -53,34 +53,34 @@ std::wstring Encoding::Utf8ToUtf16(const std::string& utf8)
     return std::wstring(dest.data(), dest.data() + iBufferSize - 1);
 }
 
-std::string Encoding::Utf8ToAnsi(const std::string& utf8)
+std::string Encoding::Utf8ToAnsi(const std::string& utf8, int ansiCodePage)
 {
     int lengthUtf16 = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, (wchar_t*)NULL, 0);
     std::vector<wchar_t> bufUtf16(lengthUtf16, L'\0');
 
     MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, bufUtf16.data(), lengthUtf16);
 
-    int lengthAnsi = WideCharToMultiByte(CP_THREAD_ACP, 0, bufUtf16.data(), -1, NULL, 0, NULL, NULL);
+    int lengthAnsi = WideCharToMultiByte(ansiCodePage, 0, bufUtf16.data(), -1, NULL, 0, NULL, NULL);
     std::vector<char> bufAnsi(lengthAnsi, '\0');
 
-    WideCharToMultiByte(CP_THREAD_ACP, 0, bufUtf16.data(), lengthUtf16 + 1, bufAnsi.data(), lengthAnsi, NULL, NULL);
+    WideCharToMultiByte(ansiCodePage, 0, bufUtf16.data(), lengthUtf16 + 1, bufAnsi.data(), lengthAnsi, NULL, NULL);
 
     return std::string(bufAnsi.data(), bufAnsi.data() + lengthAnsi - 1);
 }
 
-void Encoding::MapUtf8StringToAnsi(std::unordered_map<std::string, std::string>& entryMap)
+void Encoding::MapUtf8StringToAnsi(std::unordered_map<std::string, std::string>& entryMap, int ansiCodePage)
 {
     for (auto& pair : entryMap)
     {
-        std::string ansiString = Utf8ToAnsi(pair.second);
+        std::string ansiString = Utf8ToAnsi(pair.second, ansiCodePage);
         pair.second = ansiString;
     }
 }
-void Encoding::MapUtf8StringToAnsi(std::unordered_map<uint32_t, std::string>& entryMap)
+void Encoding::MapUtf8StringToAnsi(std::unordered_map<uint32_t, std::string>& entryMap, int ansiCodePage)
 {
     for (auto& pair : entryMap)
     {
-        std::string ansiString = Utf8ToAnsi(pair.second);
+        std::string ansiString = Utf8ToAnsi(pair.second, ansiCodePage);
         pair.second = ansiString;
     }
 }

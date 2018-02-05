@@ -22,10 +22,10 @@ class Encoding
 public:
     static std::wstring AnsiStringToWString(std::string const& src);
     static std::wstring Utf8ToUtf16(const std::string& utf8);
-    static std::string Utf8ToAnsi(const std::string& utf8);
+    static std::string Utf8ToAnsi(const std::string& utf8, int ansiCodePage);
 
-    static void MapUtf8StringToAnsi(std::unordered_map<std::string, std::string>& map);
-    static void MapUtf8StringToAnsi(std::unordered_map<uint32_t, std::string>& map);
+    static void MapUtf8StringToAnsi(std::unordered_map<std::string, std::string>& map, int ansiCodePage);
+    static void MapUtf8StringToAnsi(std::unordered_map<uint32_t, std::string>& map, int ansiCodePage);
 };
 
 class EntryLoader

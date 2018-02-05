@@ -730,7 +730,7 @@ void GXTTableCollection::BulkReplaceText(std::wstring& textSourceDirectory, GXTE
         {
             if (UsesHashForEntryName())
             {
-                auto entryMap = EntryLoader::LoadHashEntryTextsInDirectory(textDirectoryForMainTable, logFile);
+                auto entryMap = EntryLoader::LoadHashEntryTextsInDirectory(textDirectoryForMissionTable, logFile);
 
                 switch (textConvertingMode)
                 {

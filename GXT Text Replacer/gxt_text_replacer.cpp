@@ -799,9 +799,11 @@ static std::vector<std::wstring> MakeStringArgv(wchar_t* argv[])
 }
 
 static const char* const helpText = "Usage:\tgxt_text_replacer.exe [GXT filename] [Text folder] [-usecharmap] [-ansitext] [-unicodetext] [-ansicodepage (value)]\n"
-"\t-usecharmap - Convert texts using character map\n\t-ansitext - Convert texts into ansi characters (the current default setting)\n"
+"IMPORTANT: Currently, only SA GXT for non-remastered version is supported.\n"
+"\t-ansitext - Convert texts into ansi characters (the current default setting)\n"
 "\t-unicodetext - Convert texts into UTF-16 texts if GXT file content uses 16 bit char text, or doesn't convert if GXT file content uses 8 bit char text\n"
-"\t-ansicodepage - Specify ANSI code page for converting text into ANSI ones\n";
+"\t-ansicodepage - Specify ANSI code page for converting text into ANSI ones\n"
+"\t-usecharmap - Convert texts using character map (not recommended because non-ASCII characters are currently not supported)\n";
 
 namespace 
 {

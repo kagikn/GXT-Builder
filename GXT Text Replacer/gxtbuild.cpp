@@ -841,8 +841,10 @@ int wmain(int argc, wchar_t* argv[])
             {
                 const std::wstring&	tmp = argvStr[i];
                 firstStream++;
-                if (tmp == L"-sa")
-                    fileVersion = GXTEnum::eGXTVersion::GXT_SA;
+                if (tmp == L"-usecharmap")
+                    textConvMode = GXTEnum::eTextConvertingMode::UseCharacterMap;
+                if (tmp == L"-unicodetext")
+                    textConvMode = GXTEnum::eTextConvertingMode::UseUtf8OrUtf16;
             }
             else
                 break;

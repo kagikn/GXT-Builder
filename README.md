@@ -1,9 +1,9 @@
 # GXT Text replacer
 GXT Text replacer for GTA San Andreas.
 
-This tool allows you to replace GXT texts with the texts in UTF-8 text files.
+This tool allows you to replace GXT texts with the texts in UTF-8 text files quickly.
 
-**IMPORTANT: This tools is just a software prototype, especially made for Japanese Kanji Mod.**
+**IMPORTANT: This tool is just a software prototype, especially made for Japanese Kanji Mod.**  
 **I'll create more a stable version with an GXT text extracter and a more flexible builder than Silent's GXT Builder.**
 
 ## Building

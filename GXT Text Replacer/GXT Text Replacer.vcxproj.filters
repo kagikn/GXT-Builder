@@ -18,12 +18,6 @@
     <ClInclude Include="utf8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DelimStringReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ScopedCurrentDirectory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>

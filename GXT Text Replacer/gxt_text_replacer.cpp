@@ -1,7 +1,6 @@
 #include "gxt_text_replacer.h"
 #include "utf8.h"
 
-#include "DelimStringReader.h"
 #include "utility.h"
 
 #include <fstream>
@@ -16,8 +15,6 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
-#include "ScopedCurrentDirectory.h"
 
 #ifndef UNICODE
 #error GXT Builder must be compiled with Unicode character set

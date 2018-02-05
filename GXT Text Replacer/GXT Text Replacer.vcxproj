@@ -161,14 +161,14 @@
     <ClInclude Include="crc32keygen.h" />
     <ClInclude Include="DelimStringReader.h" />
     <ClInclude Include="enum.h" />
-    <ClInclude Include="gxtbuild.h" />
+    <ClInclude Include="gxt_text_replacer.h" />
     <ClInclude Include="ScopedCurrentDirectory.h" />
     <ClInclude Include="utf8.h" />
     <ClInclude Include="utility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="crc32keygen.cpp" />
-    <ClCompile Include="gxtbuild.cpp" />
+    <ClCompile Include="gxt_text_replacer.cpp" />
     <ClCompile Include="utility.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gxtbuild.h"
+#include "gxt_text_replacer.h"
 
 #include <string>
 #include <map>

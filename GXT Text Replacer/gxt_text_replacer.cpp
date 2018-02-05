@@ -798,17 +798,14 @@ static std::vector<std::wstring> MakeStringArgv(wchar_t* argv[])
     return result;
 }
 
-static const char* const helpText = "Usage:\tgxtbuilder.exe path\\to\\ini.ini [-vc] [-sa] [additional langs...]\n"
-"\t-vc - build GXT in Vice City format\n\t-sa - build GXT in San Andreas format\n"
-"\tadditional langs... - ADVANCED USAGE ONLY - names of other language INI files you want to notify "
-"about the changes\n\t\tfor each file from the list appends information about changed/added GXT entries "
-"to [langname]_changes.txt\n\n\tgxtbuilder.exe --help - displays this help message\n\n"
-"Please refer to doc\\american.ini for an example of input INI file\n";
+static const char* const helpText = "Usage:\tgxt_text_replacer.exe [GXT filename] [Text folder] [-usecharmap] [-ansitext] [-unicodetext]\n"
+"\t-usecharmap - Convert texts using character map\n\t-ansitext - Convert texts into ansi characters (the current default setting)\n"
+"\t-unicodetext - Convert texts into UTF-16 texts if GXT file content uses 16 bit char text, or doesn't convert if GXT file content uses 8 bit char text\n";
 
 int wmain(int argc, wchar_t* argv[])
 {
     std::ios_base::sync_with_stdio(false);
-    std::wcout << L"GXT Text Replacer v1.0\nMade by kagikn, Special thanks to Silent\n";
+    std::wcout << L"GXT Text Replacer v0.9\nMade by kagikn, Special thanks to Silent\n";
 
     const std::vector<std::wstring> argvStr = MakeStringArgv(argv);
 
@@ -838,6 +835,8 @@ int wmain(int argc, wchar_t* argv[])
             {
                 const std::wstring&	tmp = argvStr[i];
                 firstStream++;
+                if (tmp == L"-ansitext")
+                    textConvMode = GXTEnum::eTextConvertingMode::UseAnsi;
                 if (tmp == L"-usecharmap")
                     textConvMode = GXTEnum::eTextConvertingMode::UseCharacterMap;
                 if (tmp == L"-unicodetext")

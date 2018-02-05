@@ -235,7 +235,6 @@ namespace SA
 
     bool GXTTable::ReplaceEntries(const std::unordered_map<uint32_t, std::string>& entryMap)
     {
-
         if (entryMap.size() == 0)
         {
             return false;
@@ -254,7 +253,7 @@ namespace SA
 
         std::sort(tempPairs.begin(), tempPairs.end());
 
-        const auto originalContentStrings = StringExtension::SplitString(FormattedContent, '\0');
+        const auto originalContentStrings = StringExtension::SplitString(FormattedContent, '\0', true);
 
         uint32_t index = 0;
         std::string newFormattedStr;
@@ -268,6 +267,7 @@ namespace SA
 
                 auto contentStr = itr->second;
                 contentStr += '\0';
+
                 newFormattedStr += contentStr;
             }
             else

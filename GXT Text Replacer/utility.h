@@ -49,7 +49,7 @@ public:
 class StringExtension
 {
 public:
-    static std::vector<std::string> SplitString(const std::string &txt, const char separator);
+    static std::vector<std::string> SplitString(const std::string &txt, const char separator, bool allowEmptyString);
     static std::vector<std::wstring> SplitWString(const std::wstring &txt, const wchar_t separator);
 
 };

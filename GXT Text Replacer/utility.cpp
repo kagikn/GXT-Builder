@@ -289,7 +289,7 @@ std::optional<uint32_t> EntryLoader::HexStringToUInt32(const std::string& hexStr
     }
 }
 
-std::vector<std::string> StringExtension::SplitString(const std::string &txt, const char separator)
+std::vector<std::string> StringExtension::SplitString(const std::string &txt, const char separator, bool allowEmptyString)
 {
     std::vector<std::string> elems;
     std::string item;
@@ -299,6 +299,8 @@ std::vector<std::string> StringExtension::SplitString(const std::string &txt, co
         {
             if (!item.empty())
                 elems.push_back(item);
+            else if (allowEmptyString)
+                elems.push_back(std::string());
             item.clear();
         }
         else

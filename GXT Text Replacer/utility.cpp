@@ -204,8 +204,13 @@ void EntryLoader::LoadFileContentForHashEntry(const wchar_t* fileName, std::unor
                 std::string::size_type tabPos = fileLine.find_first_of('\t');
                 if (tabPos == std::string::npos) continue;
 
-                std::string		EntryName(fileLine.begin(), fileLine.begin() + tabPos);
-                std::string		EntryContent(fileLine.begin() + fileLine.find_first_not_of('\t', tabPos), fileLine.end());
+                std::string EntryName(fileLine.begin(), fileLine.begin() + tabPos);
+                std::string	EntryContent;
+                //check if tab position is the last position
+                if (tabPos + 1 != fileLine.size())
+                {
+                    EntryContent = std::string(fileLine.begin() + fileLine.find_first_not_of('\t', tabPos), fileLine.end());
+                }
 
                 if (EntryName.size() >= 3)
                 {
